@@ -1,0 +1,41 @@
+{
+  "name": "@exortek/fastify-mongo-sanitize",
+  "version": "2.0.0",
+  "description": "Fastify plugin for NoSQL injection prevention — sanitizes request data",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ExorTek/nosql-sanitize.git",
+    "directory": "packages/fastify"
+  },
+  "keywords": [
+    "fastify",
+    "mongodb",
+    "sanitize",
+    "nosql",
+    "security",
+    "plugin"
+  ],
+  "author": "ExorTek - https://github.com/ExorTek",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@exortek/nosql-sanitize-core": "workspace:^",
+    "fastify-plugin": "^5.0.1"
+  },
+  "devDependencies": {
+    "fastify": "npm:fastify@5.7.4",
+    "fastify4": "npm:fastify@4.29.1"
+  },
+  "files": [
+    "src/",
+    "types/"
+  ]
+}

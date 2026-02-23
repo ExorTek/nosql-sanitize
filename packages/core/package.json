@@ -1,0 +1,29 @@
+{
+  "name": "@exortek/nosql-sanitize-core",
+  "version": "1.0.0",
+  "description": "Core sanitization engine for NoSQL injection prevention",
+  "main": "src/index.js",
+  "types": "types/index.d.ts",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "lint": "echo 'lint ok'"
+  },
+  "keywords": [
+    "nosql",
+    "sanitize",
+    "mongodb",
+    "injection",
+    "security",
+    "core"
+  ],
+  "author": "ExorTek - https://github.com/ExorTek",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src/",
+    "types/"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "name": "@exortek/express-mongo-sanitize",
+  "version": "2.0.0",
+  "description": "Express middleware for NoSQL injection prevention — sanitizes request data",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ExorTek/nosql-sanitize.git",
+    "directory": "packages/express"
+  },
+  "keywords": [
+    "express",
+    "mongodb",
+    "sanitize",
+    "nosql",
+    "security",
+    "middleware"
+  ],
+  "author": "ExorTek - https://github.com/ExorTek",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@exortek/nosql-sanitize-core": "workspace:^"
+  },
+  "devDependencies": {
+    "express": "npm:express@5.2.1",
+    "express4": "npm:express@4.22.1"
+  },
+  "files": [
+    "src/",
+    "types/"
+  ]
+}
