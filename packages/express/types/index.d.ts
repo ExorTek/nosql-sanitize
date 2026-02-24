@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { SanitizeOptions, ResolvedOptions, SanitizeEvent } from '@exortek/nosql-sanitize-core';
+import { SanitizeOptions, SanitizeEvent } from '@exortek/nosql-sanitize-core';
 
 export { SanitizeOptions, SanitizeEvent };
 

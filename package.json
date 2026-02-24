@@ -5,20 +5,19 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "yarn workspaces foreach -A --parallel run test",
-    "test:core": "yarn workspace @exortek/nosql-sanitize-core run test",
-    "test:express": "yarn workspace @exortek/express-mongo-sanitize run test",
-    "test:fastify": "yarn workspace @exortek/fastify-mongo-sanitize run test",
+    "test": "yarn test:core && yarn test:express && yarn test:fastify",
+    "test:core": "yarn workspace @exortek/core-mongo-sanitize test",
+    "test:express": "yarn workspace @exortek/express-mongo-sanitize test",
+    "test:fastify": "yarn workspace @exortek/fastify-mongo-sanitize test",
     "format": "prettier --write \"packages/**/*.{js,ts,json}\"",
-    "lint": "yarn workspaces foreach -A --parallel run lint",
-    "clean": "yarn workspaces foreach -A --parallel run clean",
-    "build": "yarn workspaces foreach -A --topological run build"
+    "publish:fastify": "yarn workspace @exortek/fastify-mongo-sanitize publish",
+    "publish:express": "yarn workspace @exortek/express-mongo-sanitize publish"
   },
   "devDependencies": {
-    "prettier": "^3.5.3"
+    "prettier": "^3.8.1"
   },
-  "packageManager": "yarn@4.9.2",
+  "packageManager": "yarn@4.12.0",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

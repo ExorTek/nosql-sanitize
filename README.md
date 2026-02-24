@@ -1,32 +1,57 @@
-# nosql-sanitize
 
-A high-performance monorepo for NoSQL injection prevention. Protects Express and Fastify applications from MongoDB operator injection attacks by sanitizing request data.
+# 🛡️ nosql-sanitize
 
-## Packages
+[![Tests](https://github.com/ExorTek/nosql-sanitize/actions/workflows/test.yml/badge.svg)](https://github.com/ExorTek/nosql-sanitize/actions/workflows/test.yml)
+[![npm version](https://img.shields.io/npm/v/@exortek/express-mongo-sanitize.svg)](https://www.npmjs.com/package/@exortek/express-mongo-sanitize)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-| Package | Description | Version |
-|---------|-------------|---------|
-| [`@exortek/nosql-sanitize-core`](./packages/core) | Core sanitization engine | ![npm](https://img.shields.io/npm/v/@exortek/nosql-sanitize-core) |
-| [`@exortek/express-mongo-sanitize`](./packages/express) | Express middleware | ![npm](https://img.shields.io/npm/v/@exortek/express-mongo-sanitize) |
-| [`@exortek/fastify-mongo-sanitize`](./packages/fastify) | Fastify plugin | ![npm](https://img.shields.io/npm/v/@exortek/fastify-mongo-sanitize) |
+---
 
-## Why?
+## 🚀 Overview
 
-MongoDB operators like `$gt`, `$ne`, `$where` can be injected through user input:
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ExorTek/nosql-sanitize/main/assets/logo.png" width="200" alt="nosql-sanitize logo">
+</p>
+
+`nosql-sanitize` is a lightweight and blazing-fast suite of tools designed to prevent **NoSQL Injection** attacks in Node.js applications. It recursively sanitizes user-supplied data to remove characters and patterns (like `$` and control characters) used in malicious MongoDB queries.
+
+### Key Features
+
+- **Blazing Fast**: Optimized core engine with pre-compiled regex and minimal overhead.
+- **Recursive Sanitization**: Automatically cleans nested objects and arrays.
+- **Framework Support**: First-class support for **Express** (4.x/5.x) and **Fastify** (4.x/5.x).
+- **Highly Configurable**: Control depth, allowed/denied keys, content-types, and more.
+- **TypeScript Ready**: Built-in, high-quality type definitions.
+- **Security First**: Preserves sensitive data like email addresses while stripping injection vectors.
+
+## 📦 Packages
+
+| Package | Purpose | Installation |
+|---------|---------|--------------|
+| [`@exortek/express-mongo-sanitize`](./packages/express) | Express Middleware | `npm i @exortek/express-mongo-sanitize` |
+| [`@exortek/fastify-mongo-sanitize`](./packages/fastify) | Fastify Plugin | `npm i @exortek/fastify-mongo-sanitize` |
+| [`@exortek/nosql-sanitize-core`](./packages/core) | Core Engine | `npm i @exortek/nosql-sanitize-core` |
+
+## 🤔 Why?
+
+In MongoDB, operators like `$gt`, `$ne`, and `$where` can be injected via JSON input to bypass logic or extract data:
 
 ```json
-// Malicious login attempt
+// ❌ Malicious login attempt
 { "username": "admin", "password": { "$ne": "" } }
 ```
 
-This middleware removes `$` and control characters from request data before it reaches your database layer.
+Without sanitization, this query might return the first user in the database (usually the admin) because `password` is "not equal to empty string". `nosql-sanitize` transforms this into:
 
-## Quick Start
-
-**Express:**
-```bash
-npm install @exortek/express-mongo-sanitize
+```json
+// ✅ Sanitized input
+{ "username": "admin", "password": { "ne": "" } }
 ```
+
+## ⚡ Quick Start
+
+### Express
+
 ```js
 const express = require('express');
 const mongoSanitize = require('@exortek/express-mongo-sanitize');
@@ -34,50 +59,100 @@ const mongoSanitize = require('@exortek/express-mongo-sanitize');
 const app = express();
 app.use(express.json());
 app.use(mongoSanitize());
+
+app.post('/login', (req, res) => {
+  // req.body is already sanitized
+  res.send('Safe!');
+});
 ```
 
-**Fastify:**
-```bash
-npm install @exortek/fastify-mongo-sanitize
-```
+### Fastify
+
 ```js
 const fastify = require('fastify')();
 const mongoSanitize = require('@exortek/fastify-mongo-sanitize');
 
 fastify.register(mongoSanitize);
+
+fastify.post('/login', async (request) => {
+  // request.body is already sanitized
+  return { status: 'Safe!' };
+});
 ```
 
-## Architecture
+## ⚙️ Configuration Options
 
+All packages (`express`, `fastify`) accept the same configuration options, which are passed to the core engine.
+
+| Option | Type | Default | Description |
+|:-------|:-----|:--------|:------------|
+| `replaceWith` | `string` | `''` | String to replace matched patterns (like `$`) with. |
+| `removeMatches` | `boolean` | `false` | If `true`, removes the entire key-value pair if a match is found. |
+| `sanitizeObjects` | `string[]` | `['body', 'query']` | Fields on the request object to sanitize. |
+| `contentTypes` | `string[] \| null` | `['application/json', ...]` | Only sanitize `body` for these content types. `null` = all. |
+| `skipRoutes` | `(string \| RegExp)[]` | `[]` | Routes to ignore during auto-sanitization. |
+| `recursive` | `boolean` | `true` | Whether to recursively sanitize nested objects/arrays. |
+| `maxDepth` | `number \| null` | `null` | Maximum recursion depth for nested structures. |
+| `allowedKeys` | `string[]` | `[]` | List of keys to allow without sanitization (e.g., `['$set']`). |
+| `deniedKeys` | `string[]` | `[]` | List of keys to completely remove from the input. |
+| `onSanitize` | `function` | `null` | Hook called when a value is sanitized: `(key, value) => { ... }`. |
+| `debug.enabled` | `boolean` | `false` | Enable detailed logging for debugging. |
+
+### Advanced Usage Examples
+
+#### Skipping Specific Routes
+```js
+app.use(mongoSanitize({
+  skipRoutes: ['/api/v1/webhook', /^\/public\/.*/]
+}));
 ```
-packages/
-├── core/       → Shared sanitization engine (patterns, validators, sanitizers)
-├── express/    → Express middleware adapter (~60 lines)
-└── fastify/    → Fastify plugin adapter (~50 lines)
+
+#### Allowing Specific Keys
+Useful if you trust certain operators in specific contexts:
+```js
+app.use(mongoSanitize({
+  allowedKeys: ['$set', '$push']
+}));
 ```
 
-The core package contains all sanitization logic. Express and Fastify packages are thin wrappers that adapt the core to each framework's middleware/plugin system. Bug fixes and features apply to both frameworks automatically.
+#### Custom Replacement
+Instead of removing `$`, replace it with an underscore:
+```js
+app.use(mongoSanitize({
+  replaceWith: '_'
+}));
+// { "$gt": 5 } -> { "_gt": 5 }
+```
 
-## Development
+## 🛠 Architecture
+
+The project is structured as a monorepo for maximum consistency:
+
+- **`core/`**: The brain. Contains the logic, default patterns, and options resolver.
+- **`express/` & `fastify/`**: Thin, framework-specific wrappers that adapt the core to each ecosystem.
+
+## 🧪 Development & Testing
 
 ```bash
+# Clone and install
 git clone https://github.com/ExorTek/nosql-sanitize.git
 cd nosql-sanitize
 yarn install
-yarn test          # Run all tests (147 tests)
-yarn test:core     # Core unit tests only
-yarn test:express  # Express integration tests (v4 + v5)
-yarn test:fastify  # Fastify integration tests (v4 + v5)
+
+# Run tests
+yarn test          # All suites
+yarn test:core     # Core only
+yarn test:express  # Express integration
+yarn test:fastify  # Fastify integration
+
+# Benchmark
+yarn benchmark     # Performance testing
 ```
 
-## Compatibility
+## 🤝 Contributing
 
-| Framework | Supported Versions |
-|-----------|-------------------|
-| Express   | 4.x, 5.x         |
-| Fastify   | 4.x, 5.x         |
-| Node.js   | ≥ 18.0.0         |
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
+## 📜 License
 
-[MIT](./LICENSE) — ExorTek
+[MIT](./LICENSE) — Created by **ExorTek**

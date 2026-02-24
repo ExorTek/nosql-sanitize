@@ -6,7 +6,8 @@
   "type": "commonjs",
   "types": "types/index.d.ts",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "publish": "npm publish"
   },
   "repository": {
     "type": "git",
@@ -19,9 +20,14 @@
     "sanitize",
     "nosql",
     "security",
-    "plugin"
+    "plugin",
+    "backend"
   ],
-  "author": "ExorTek - https://github.com/ExorTek",
+  "author": "ExorTek",
+  "homepage": "https://github.com/ExorTek/nosql-sanitize/tree/main/packages/fastify#readme",
+  "bugs": {
+    "url": "https://github.com/ExorTek/nosql-sanitize/issues"
+  },
   "license": "MIT",
   "publishConfig": {
     "access": "public"

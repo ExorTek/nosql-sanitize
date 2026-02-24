@@ -1,4 +1,4 @@
-import { FastifyPluginCallback } from 'fastify';
+import type { FastifyPluginCallback } from 'fastify';
 import { SanitizeOptions, SanitizeEvent } from '@exortek/nosql-sanitize-core';
 
 export { SanitizeOptions, SanitizeEvent };
