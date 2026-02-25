@@ -1,16 +1,10 @@
+<p style="text-align: center">
+  <img src="./assets/logo.png" width="320" alt="nosql-sanitize logo">
+</p>
 
-# 🛡️ nosql-sanitize
-
-[![Tests](https://github.com/ExorTek/nosql-sanitize/actions/workflows/test.yml/badge.svg)](https://github.com/ExorTek/nosql-sanitize/actions/workflows/test.yml)
-[![npm version](https://img.shields.io/npm/v/@exortek/express-mongo-sanitize.svg)](https://www.npmjs.com/package/@exortek/express-mongo-sanitize)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
----
-
-## 🚀 Overview
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ExorTek/nosql-sanitize/main/assets/logo.png" width="200" alt="nosql-sanitize logo">
+<p style="text-align: center">
+  <img src="https://img.shields.io/npm/v/@exortek/express-mongo-sanitize?label=express&style=flat-square&logo=express&logoColor=white" alt="express version">
+  <img src="https://img.shields.io/npm/v/@exortek/fastify-mongo-sanitize?label=fastify&style=flat-square&logo=fastify&logoColor=white" alt="fastify version">
 </p>
 
 `nosql-sanitize` is a lightweight and blazing-fast suite of tools designed to prevent **NoSQL Injection** attacks in Node.js applications. It recursively sanitizes user-supplied data to remove characters and patterns (like `$` and control characters) used in malicious MongoDB queries.
