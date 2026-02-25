@@ -1,8 +1,8 @@
-<p style="text-align: center">
+<p align="center">
   <img src="./assets/logo.png" width="320" alt="nosql-sanitize logo">
 </p>
 
-<p style="text-align: center">
+<p align="center">
   <img src="https://img.shields.io/npm/v/@exortek/express-mongo-sanitize?label=express&style=flat-square&logo=express&logoColor=white" alt="express version">
   <img src="https://img.shields.io/npm/v/@exortek/fastify-mongo-sanitize?label=fastify&style=flat-square&logo=fastify&logoColor=white" alt="fastify version">
 </p>
