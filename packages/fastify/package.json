@@ -20,7 +20,7 @@
     "url": "git+https://github.com/ExorTek/nosql-sanitize.git",
     "directory": "packages/fastify"
   },
-  "homepage": "https://github.com/ExorTek/nosql-sanitize/tree/main/packages/fastify#readme",
+  "homepage": "https://github.com/ExorTek/nosql-sanitize/packages/fastify#readme",
   "bugs": {
     "url": "https://github.com/ExorTek/nosql-sanitize/issues"
   },

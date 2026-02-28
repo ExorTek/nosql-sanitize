@@ -20,7 +20,7 @@
     "url": "git+https://github.com/ExorTek/nosql-sanitize.git",
     "directory": "packages/express"
   },
-  "homepage": "https://github.com/ExorTek/nosql-sanitize/tree/main/packages/express#readme",
+  "homepage": "https://github.com/ExorTek/nosql-sanitize/packages/express#readme",
   "bugs": {
     "url": "https://github.com/ExorTek/nosql-sanitize/issues"
   },
