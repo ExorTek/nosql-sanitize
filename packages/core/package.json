@@ -1,12 +1,13 @@
 {
   "name": "@exortek/nosql-sanitize-core",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Core sanitization engine for NoSQL injection prevention",
   "main": "src/index.js",
   "types": "types/index.d.ts",
   "type": "commonjs",
   "exports": {
     ".": {
+      "import": "./src/index.js",
       "require": "./src/index.js",
       "types": "./types/index.d.ts"
     }

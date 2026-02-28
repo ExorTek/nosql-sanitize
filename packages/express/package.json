@@ -1,12 +1,13 @@
 {
   "name": "@exortek/express-mongo-sanitize",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Express middleware for NoSQL injection prevention — sanitizes request data",
   "main": "src/index.js",
   "type": "commonjs",
   "types": "types/index.d.ts",
   "exports": {
     ".": {
+      "import": "./src/index.js",
       "require": "./src/index.js",
       "types": "./types/index.d.ts"
     }
