@@ -5,14 +5,24 @@
   "main": "src/index.js",
   "type": "commonjs",
   "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./src/index.js",
+      "types": "./types/index.d.ts"
+    }
+  },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "publish": "npm publish"
+    "prepublishOnly": "npm test"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ExorTek/nosql-sanitize.git",
     "directory": "packages/express"
+  },
+  "homepage": "https://github.com/ExorTek/nosql-sanitize/tree/main/packages/express#readme",
+  "bugs": {
+    "url": "https://github.com/ExorTek/nosql-sanitize/issues"
   },
   "keywords": [
     "express",
@@ -21,26 +31,37 @@
     "nosql",
     "security",
     "middleware",
+    "injection",
     "backend"
   ],
-  "author": "ExorTek",
-  "homepage": "https://github.com/ExorTek/nosql-sanitize/tree/main/packages/express#readme",
-  "bugs": {
-    "url": "https://github.com/ExorTek/nosql-sanitize/issues"
-  },
+  "author": "ExorTek - https://github.com/ExorTek",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@exortek/nosql-sanitize-core": "workspace:^"
+    "@exortek/nosql-sanitize-core": "^2.0.0"
+  },
+  "peerDependencies": {
+    "express": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": false
+    }
   },
   "devDependencies": {
-    "express": "npm:express@5.2.1",
-    "express4": "npm:express@4.22.1"
+    "@types/express": "^5.0.6",
+    "express": "npm:express@5.1.0",
+    "express4": "npm:express@4.21.2"
   },
   "files": [
     "src/",
-    "types/"
+    "types/",
+    "README.md",
+    "LICENSE"
   ]
 }

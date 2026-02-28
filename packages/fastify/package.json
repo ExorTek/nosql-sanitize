@@ -5,14 +5,24 @@
   "main": "src/index.js",
   "type": "commonjs",
   "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./src/index.js",
+      "types": "./types/index.d.ts"
+    }
+  },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "publish": "npm publish"
+    "prepublishOnly": "npm test"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ExorTek/nosql-sanitize.git",
     "directory": "packages/fastify"
+  },
+  "homepage": "https://github.com/ExorTek/nosql-sanitize/tree/main/packages/fastify#readme",
+  "bugs": {
+    "url": "https://github.com/ExorTek/nosql-sanitize/issues"
   },
   "keywords": [
     "fastify",
@@ -21,20 +31,28 @@
     "nosql",
     "security",
     "plugin",
+    "injection",
     "backend"
   ],
-  "author": "ExorTek",
-  "homepage": "https://github.com/ExorTek/nosql-sanitize/tree/main/packages/fastify#readme",
-  "bugs": {
-    "url": "https://github.com/ExorTek/nosql-sanitize/issues"
-  },
+  "author": "ExorTek - https://github.com/ExorTek",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@exortek/nosql-sanitize-core": "workspace:^",
-    "fastify-plugin": "^5.0.1"
+    "@exortek/nosql-sanitize-core": "^2.0.0",
+    "fastify-plugin": "^5.1.0"
+  },
+  "peerDependencies": {
+    "fastify": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "fastify": {
+      "optional": false
+    }
   },
   "devDependencies": {
     "fastify": "npm:fastify@5.7.4",
@@ -42,6 +60,8 @@
   },
   "files": [
     "src/",
-    "types/"
+    "types/",
+    "README.md",
+    "LICENSE"
   ]
 }
