@@ -1,0 +1,407 @@
+{
+  "meta": {
+    "timestamp": "2026-02-28T03:49:24.988Z",
+    "node": "v24.12.0",
+    "platform": "darwin arm64",
+    "gc": true,
+    "cpu": "Apple M4 Pro",
+    "cpuCores": 14,
+    "totalMemMB": 24576,
+    "freeMemMB": 688,
+    "memory": {
+      "rssStartMB": 44.5,
+      "rssEndMB": 73,
+      "rssDeltaMB": 28.5,
+      "heapUsedMB": 8.3,
+      "heapTotalMB": 21.1,
+      "externalMB": 1.5
+    }
+  },
+  "results": [
+    {
+      "section": "resolveOptions — Init Cost",
+      "label": "Default options",
+      "msPerOp": 0.0009710387500000001,
+      "opsPerSec": 1029825.0198563136,
+      "iterations": 100000
+    },
+    {
+      "section": "resolveOptions — Init Cost",
+      "label": "With skipRoutes (5 strings)",
+      "msPerOp": 0.0010554174999999999,
+      "opsPerSec": 947492.3430775027,
+      "iterations": 100000
+    },
+    {
+      "section": "resolveOptions — Init Cost",
+      "label": "With skipRoutes (5 regex)",
+      "msPerOp": 0.00096277542,
+      "opsPerSec": 1038663.8246331632,
+      "iterations": 100000
+    },
+    {
+      "section": "resolveOptions — Init Cost",
+      "label": "With all options",
+      "msPerOp": 0.00099653375,
+      "opsPerSec": 1003478.3066805314,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeString",
+      "label": "Clean string (no match)",
+      "msPerOp": 0.00002931792,
+      "opsPerSec": 34108831.7315826,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeString",
+      "label": "Dirty string ($prefix)",
+      "msPerOp": 0.00003707625,
+      "opsPerSec": 26971443.98368228,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeString",
+      "label": "Email (fast-path skip)",
+      "msPerOp": 0.00003124917,
+      "opsPerSec": 32000849.94257448,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeString",
+      "label": "Long string 1KB",
+      "msPerOp": 0.00072491292,
+      "opsPerSec": 1379476.0341697317,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeString",
+      "label": "Long string 10KB",
+      "msPerOp": 0.00523390584,
+      "opsPerSec": 191061.90110596258,
+      "iterations": 50000
+    },
+    {
+      "section": "sanitizeValue — Objects",
+      "label": "Flat 5 fields",
+      "msPerOp": 0.00112590292,
+      "opsPerSec": 888176.0427444313,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeValue — Objects",
+      "label": "Flat 20 fields",
+      "msPerOp": 0.00498943042,
+      "opsPerSec": 200423.6788214395,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeValue — Objects",
+      "label": "Flat 100 fields",
+      "msPerOp": 0.02445446875,
+      "opsPerSec": 40892.321572105306,
+      "iterations": 20000
+    },
+    {
+      "section": "sanitizeValue — Objects",
+      "label": "Nested 3×3 (~39 fields)",
+      "msPerOp": 0.006779495419999999,
+      "opsPerSec": 147503.60285662676,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeValue — Objects",
+      "label": "Nested 3×5 (~155 fields)",
+      "msPerOp": 0.02450568545,
+      "opsPerSec": 40806.85692470602,
+      "iterations": 20000
+    },
+    {
+      "section": "sanitizeValue — Objects",
+      "label": "Nested 4×5 (~780 fields)",
+      "msPerOp": 0.11952151659999999,
+      "opsPerSec": 8366.694369739951,
+      "iterations": 5000
+    },
+    {
+      "section": "sanitizeValue — Objects",
+      "label": "Mixed 50 (strings/nums/nulls/emails)",
+      "msPerOp": 0.007387664160000001,
+      "opsPerSec": 135360.78229089396,
+      "iterations": 50000
+    },
+    {
+      "section": "sanitizeValue — Arrays",
+      "label": "String array (10 items)",
+      "msPerOp": 0.00034944,
+      "opsPerSec": 2861721.6117216116,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeValue — Arrays",
+      "label": "String array (100 items)",
+      "msPerOp": 0.00333795625,
+      "opsPerSec": 299584.51372752414,
+      "iterations": 20000
+    },
+    {
+      "section": "sanitizeValue — Arrays",
+      "label": "Mixed array (50 items)",
+      "msPerOp": 0.00063245584,
+      "opsPerSec": 1581138.0601687543,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeValue — Arrays",
+      "label": "Object array (20 items)",
+      "msPerOp": 0.00649368291,
+      "opsPerSec": 153995.81622010554,
+      "iterations": 100000
+    },
+    {
+      "section": "sanitizeValue — Arrays",
+      "label": "With filterNull+distinct",
+      "msPerOp": 0.00227065333,
+      "opsPerSec": 440401.88204335,
+      "iterations": 100000
+    },
+    {
+      "section": "handleRequest — Full Pipeline",
+      "label": "Small body (5 fields)",
+      "msPerOp": 0.0013944916699999998,
+      "opsPerSec": 717107.1878830227,
+      "iterations": 100000
+    },
+    {
+      "section": "handleRequest — Full Pipeline",
+      "label": "Medium body (20 fields)",
+      "msPerOp": 0.0051754270899999994,
+      "opsPerSec": 193220.76856849316,
+      "iterations": 100000
+    },
+    {
+      "section": "handleRequest — Full Pipeline",
+      "label": "Large body (100 fields)",
+      "msPerOp": 0.0231218167,
+      "opsPerSec": 43249.19676402417,
+      "iterations": 10000
+    },
+    {
+      "section": "handleRequest — Full Pipeline",
+      "label": "Nested body (3×5, ~155 fields)",
+      "msPerOp": 0.025080708400000002,
+      "opsPerSec": 39871.28210461551,
+      "iterations": 10000
+    },
+    {
+      "section": "handleRequest — Full Pipeline",
+      "label": "With maxDepth=2",
+      "msPerOp": 0.0109335604,
+      "opsPerSec": 91461.5151346308,
+      "iterations": 20000
+    },
+    {
+      "section": "handleRequest — Full Pipeline",
+      "label": "skipRoute hit (exact)",
+      "msPerOp": 0.0006125154200000001,
+      "opsPerSec": 1632611.9593854467,
+      "iterations": 100000
+    },
+    {
+      "section": "handleRequest — Full Pipeline",
+      "label": "skipRoute hit (regex)",
+      "msPerOp": 0.0006590000000000001,
+      "opsPerSec": 1517450.682852807,
+      "iterations": 100000
+    },
+    {
+      "section": "shouldSkipRoute",
+      "label": "Exact match (10 routes, hit)",
+      "msPerOp": 0.000028944169999999998,
+      "opsPerSec": 34549271.92591807,
+      "iterations": 100000
+    },
+    {
+      "section": "shouldSkipRoute",
+      "label": "Exact match (10 routes, miss)",
+      "msPerOp": 0.00003139459,
+      "opsPerSec": 31852621.741516612,
+      "iterations": 100000
+    },
+    {
+      "section": "shouldSkipRoute",
+      "label": "Regex match (3 patterns, hit)",
+      "msPerOp": 0.00007910959,
+      "opsPerSec": 12640692.487472124,
+      "iterations": 100000
+    },
+    {
+      "section": "shouldSkipRoute",
+      "label": "Regex match (3 patterns, miss)",
+      "msPerOp": 0.00005430834,
+      "opsPerSec": 18413378.129399646,
+      "iterations": 100000
+    },
+    {
+      "section": "shouldSkipRoute",
+      "label": "Mixed (4 routes, exact hit)",
+      "msPerOp": 0.00003287458,
+      "opsPerSec": 30418639.56893138,
+      "iterations": 100000
+    },
+    {
+      "section": "shouldSkipRoute",
+      "label": "Mixed (4 routes, regex hit)",
+      "msPerOp": 0.00005117375,
+      "opsPerSec": 19541268.716871444,
+      "iterations": 100000
+    },
+    {
+      "section": "shouldSkipRoute",
+      "label": "Mixed (4 routes, miss)",
+      "msPerOp": 0.000046688749999999996,
+      "opsPerSec": 21418435.918717038,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "isPlainObject (regular)",
+      "msPerOp": 0.00000815833,
+      "opsPerSec": 122574105.23967528,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "isPlainObject (null-proto)",
+      "msPerOp": 0.000013449580000000001,
+      "opsPerSec": 74351764.14430785,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "isPlainObject (fastify 2-level)",
+      "msPerOp": 0.0000074291600000000005,
+      "opsPerSec": 134604719.77989435,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "isObjectEmpty (empty)",
+      "msPerOp": 0.00000628375,
+      "opsPerSec": 159140640.54107818,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "isObjectEmpty (non-empty)",
+      "msPerOp": 0.000012619169999999999,
+      "opsPerSec": 79244514.49659526,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "isEmail (valid)",
+      "msPerOp": 0.00002825375,
+      "opsPerSec": 35393531.83205769,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "isEmail (invalid — no @)",
+      "msPerOp": 0.00000788834,
+      "opsPerSec": 126769383.67261046,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "isEmail (number)",
+      "msPerOp": 0.0000031274999999999997,
+      "opsPerSec": 319744204.636291,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "cleanUrl (with query)",
+      "msPerOp": 0.00002339792,
+      "opsPerSec": 42738841.74319769,
+      "iterations": 100000
+    },
+    {
+      "section": "Helpers & Type Checks",
+      "label": "extractMimeType (with charset)",
+      "msPerOp": 0.00002699875,
+      "opsPerSec": 37038751.794064544,
+      "iterations": 100000
+    },
+    {
+      "section": "maxDepth Impact",
+      "label": "Depth 5×3 — no limit",
+      "msPerOp": 0.0543354333,
+      "opsPerSec": 18404.196658904715,
+      "iterations": 10000
+    },
+    {
+      "section": "maxDepth Impact",
+      "label": "Depth 5×3 — maxDepth=1",
+      "msPerOp": 0.019864866699999997,
+      "opsPerSec": 50340.131403952495,
+      "iterations": 10000
+    },
+    {
+      "section": "maxDepth Impact",
+      "label": "Depth 5×3 — maxDepth=2",
+      "msPerOp": 0.020095983300000002,
+      "opsPerSec": 49761.18784891705,
+      "iterations": 10000
+    },
+    {
+      "section": "maxDepth Impact",
+      "label": "Depth 5×3 — maxDepth=3",
+      "msPerOp": 0.0219191791,
+      "opsPerSec": 45622.146497265494,
+      "iterations": 10000
+    },
+    {
+      "section": "Feature Overhead (20 fields)",
+      "label": "Baseline (default)",
+      "msPerOp": 0.00483909292,
+      "opsPerSec": 206650.29924657862,
+      "iterations": 100000
+    },
+    {
+      "section": "Feature Overhead (20 fields)",
+      "label": "+ stringOptions (trim+lower+max)",
+      "msPerOp": 0.00428509583,
+      "opsPerSec": 233367.00967081988,
+      "iterations": 100000
+    },
+    {
+      "section": "Feature Overhead (20 fields)",
+      "label": "+ removeMatches",
+      "msPerOp": 0.00262621583,
+      "opsPerSec": 380776.0156559562,
+      "iterations": 100000
+    },
+    {
+      "section": "Feature Overhead (20 fields)",
+      "label": "+ removeEmpty",
+      "msPerOp": 0.004054069160000001,
+      "opsPerSec": 246665.74755720247,
+      "iterations": 100000
+    },
+    {
+      "section": "Feature Overhead (20 fields)",
+      "label": "+ allowedKeys (5 keys)",
+      "msPerOp": 0.0019582829200000002,
+      "opsPerSec": 510651.4435615871,
+      "iterations": 100000
+    },
+    {
+      "section": "Feature Overhead (20 fields)",
+      "label": "+ onSanitize callback",
+      "msPerOp": 0.0040189458400000004,
+      "opsPerSec": 248821.46707406236,
+      "iterations": 100000
+    }
+  ]
+}
