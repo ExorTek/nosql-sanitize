@@ -5,10 +5,8 @@ const {
   handleRequest,
   shouldSkipRoute,
   sanitizeString,
-  cleanUrl,
   log,
   isString,
-  NoSQLSanitizeError,
 } = require('@exortek/nosql-sanitize-core');
 
 /**
@@ -18,6 +16,11 @@ const {
  */
 const expressMongoSanitize = (options = {}) => {
   const opts = resolveOptions(options);
+
+  log(opts.debug, 'info', 'PLUGIN', 'Initializing nosql-sanitize plugin', {
+    mode: opts.mode,
+    sanitizeObjects: [...opts.sanitizeObjects] || opts.sanitizeObjects,
+  });
 
   return (req, res, next) => {
     const requestPath = req.path || req.url;
@@ -37,6 +40,7 @@ const expressMongoSanitize = (options = {}) => {
       };
     }
 
+    log(opts.debug, 'info', 'PLUGIN', 'Plugin initialized');
     next();
   };
 };
@@ -48,12 +52,17 @@ const expressMongoSanitize = (options = {}) => {
  */
 const paramSanitizeHandler = (options = {}) => {
   const opts = resolveOptions(options);
+  log(opts.debug, 'info', 'PLUGIN', 'Initializing nosql-sanitize param handler', {
+    mode: opts.mode,
+    sanitizeObjects: [...opts.sanitizeObjects] || opts.sanitizeObjects,
+  });
 
   return function (req, res, next, value, paramName) {
     const key = paramName || this?.name;
     if (key && req.params && isString(value)) {
       req.params[key] = sanitizeString(value, opts, true);
     }
+    log(opts.debug, 'info', 'PLUGIN', 'Param sanitized', { key, value });
     next();
   };
 };

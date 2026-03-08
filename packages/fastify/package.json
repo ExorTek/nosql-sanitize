@@ -56,7 +56,7 @@
     }
   },
   "devDependencies": {
-    "fastify": "npm:fastify@5.7.4",
+    "fastify": "npm:fastify@5.8.2",
     "fastify4": "npm:fastify@4.29.1"
   },
   "files": [
