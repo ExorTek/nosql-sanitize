@@ -15,7 +15,7 @@
 - **Recursive Sanitization**: Automatically cleans nested objects and arrays.
 - **Framework Support**: First-class support for **Express** (4.x/5.x) and **Fastify** (4.x/5.x).
 - **Prototype Pollution Protection**: Blocks `__proto__`, `constructor`, and `prototype` keys by default.
-- **Configurable Depth Limiting**: Control what happens to values beyond `maxDepth` — preserve (default, v2 compatible), remove, or throw.
+- **Configurable Depth Limiting**: Control what happens to values beyond `maxDepth` — preserve, remove, or throw.
 - **Highly Configurable**: Control depth, allowed/denied keys, content-types, and more.
 - **TypeScript Ready**: Built-in, high-quality type definitions.
 - **Security First**: Preserves sensitive data like email addresses while stripping injection vectors.
@@ -80,22 +80,22 @@ fastify.post('/login', async (request) => {
 
 All packages (`express`, `fastify`) accept the same configuration options, which are passed to the core engine.
 
-| Option               | Type                     | Default                     | Description                                                                                                                                      |
-|:---------------------|:-------------------------|:----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| `replaceWith`        | `string`                 | `''`                        | String to replace matched patterns (like `$`) with.                                                                                              |
-| `removeMatches`      | `boolean`                | `false`                     | If `true`, removes the entire key-value pair if a match is found.                                                                                |
-| `sanitizeObjects`    | `string[]`               | `['body', 'query']`         | Fields on the request object to sanitize.                                                                                                        |
-| `contentTypes`       | `string[]` or `null`     | `['application/json', ...]` | Only sanitize `body` for these content types. `null` = all.                                                                                      |
-| `skipRoutes`         | `(string` or `RegExp)[]` | `[]`                        | Routes to ignore during auto-sanitization.                                                                                                       |
-| `recursive`          | `boolean`                | `true`                      | Whether to recursively sanitize nested objects/arrays.                                                                                           |
-| `maxDepth`           | `number` or `null`       | `null`                      | Maximum recursion depth. `0` = top-level strings only. `null` = unlimited.                                                                       |
-| `maxDepthBehavior`   | `string`                 | `'preserve'`                | What to do when `maxDepth` is exceeded: `'preserve'` (pass through, v2 compatible), `'remove'` (drop value — recommended), or `'throw'` (error). |
-| `preserveEmails`     | `boolean`                | `true`                      | Preserve email-looking values without sanitizing. Also bypasses custom `patterns`; set `false` if custom patterns must apply to emails.          |
-| `allowPrototypeKeys` | `boolean`                | `false`                     | Allow `__proto__` / `constructor` / `prototype` keys. When `false`, these are stripped to prevent prototype pollution.                           |
-| `allowedKeys`        | `string[]`               | `[]`                        | List of keys to allow without sanitization (e.g., `['$set']`).                                                                                   |
-| `deniedKeys`         | `string[]`               | `[]`                        | List of keys to completely remove from the input.                                                                                                |
-| `onSanitize`         | `function`               | `null`                      | Comprehensive audit callback. See [onSanitize Events](#onsanitize-events).                                                                       |
-| `debug.enabled`      | `boolean`                | `false`                     | Enable detailed logging for debugging.                                                                                                           |
+| Option               | Type                     | Default                     | Description                                                                            |
+|:---------------------|:-------------------------|:----------------------------|:---------------------------------------------------------------------------------------|
+| `replaceWith`        | `string`                 | `''`                        | String to replace matched patterns (like `$`) with.                                    |
+| `removeMatches`      | `boolean`                | `false`                     | If `true`, removes the entire key-value pair if a match is found.                      |
+| `sanitizeObjects`    | `string[]`               | `['body', 'query']`         | Fields on the request object to sanitize.                                              |
+| `contentTypes`       | `string[]` \| `null`     | `['application/json', ...]` | Only sanitize `body` for these content types. `null` = all.                            |
+| `skipRoutes`         | `(string` \| `RegExp)[]` | `[]`                        | Routes to ignore during auto-sanitization.                                             |
+| `recursive`          | `boolean`                | `true`                      | Whether to recursively sanitize nested objects/arrays.                                 |
+| `maxDepth`           | `number` \| `null`       | `null`                      | Maximum recursion depth. `0` = top-level strings only. `null` = unlimited.             |
+| `maxDepthBehavior`   | `string`                 | `'preserve'`                | Action when `maxDepth` exceeded: `'preserve'`, `'remove'` (recommended), or `'throw'`. |
+| `preserveEmails`     | `boolean`                | `true`                      | Preserve email-looking values without sanitizing.                                      |
+| `allowPrototypeKeys` | `boolean`                | `false`                     | Allow `__proto__` / `constructor` / `prototype` keys.                                  |
+| `allowedKeys`        | `string[]`               | `[]`                        | List of keys to allow without sanitization (e.g., `['$set']`).                         |
+| `deniedKeys`         | `string[]`               | `[]`                        | List of keys to completely remove from the input.                                      |
+| `onSanitize`         | `function`               | `null`                      | Comprehensive audit callback. See [onSanitize Events](#onsanitize-events).             |
+| `debug.enabled`      | `boolean`                | `false`                     | Enable detailed logging for debugging.                                                 |
 
 ### onSanitize Events
 
@@ -105,18 +105,21 @@ The `onSanitize` callback fires for value changes, key renames, array string cha
 app.use(mongoSanitize({
   onSanitize: (event) => {
     console.log(event);
-    // {
-    //   type: 'value' | 'key' | 'both' | 'removed',
-    //   reason: 'deniedKey' | 'notAllowed' | 'prototypePollution' | 'removeMatches' | 'removeEmpty' | 'maxDepth',  // only for 'removed'
-    //   key: '$gt',               // original key
-    //   sanitizedKey: 'gt',       // key after sanitization
-    //   path: 'body.user.$gt',    // full dotted path
-    //   originalValue: ...,
-    //   sanitizedValue: ...,
-    // }
   }
 }));
 ```
+
+**Event shape:**
+
+| Field            | Description                                                                                                                   |
+|:-----------------|:------------------------------------------------------------------------------------------------------------------------------|
+| `type`           | `'value'`, `'key'`, `'both'`, or `'removed'`                                                                                  |
+| `reason`         | Only for `'removed'`: `'deniedKey'`, `'notAllowed'`, `'prototypePollution'`, `'removeMatches'`, `'removeEmpty'`, `'maxDepth'` |
+| `key`            | Original key (e.g., `'$gt'`)                                                                                                  |
+| `sanitizedKey`   | Key after sanitization (e.g., `'gt'`)                                                                                         |
+| `path`           | Full dotted path (e.g., `'body.user.$gt'`)                                                                                    |
+| `originalValue`  | Value before sanitization                                                                                                     |
+| `sanitizedValue` | Value after sanitization                                                                                                      |
 
 ### Advanced Usage Examples
 
@@ -148,9 +151,7 @@ app.use(mongoSanitize({
 ```js
 app.use(mongoSanitize({
   maxDepth: 3,
-  maxDepthBehavior: 'remove',  // recommended: drop over-depth values
-  // 'preserve' (default) keeps them unsanitized for v2 compatibility
-  // 'throw' rejects the request with NoSQLSanitizeError
+  maxDepthBehavior: 'remove',
 }));
 ```
 
@@ -164,7 +165,7 @@ By default, `__proto__`, `constructor`, and `prototype` keys are stripped from a
 { "__proto__": { "isAdmin": true } }
 ```
 
-Smuggled variants (e.g., `"__pro to__"` → `"__proto__"` after control character stripping) are also caught. To opt out (only if you fully trust the input):
+Smuggled variants (e.g., `"__pro to__"` after control character stripping) are also caught. To opt out (only if you fully trust the input):
 
 ```js
 app.use(mongoSanitize({ allowPrototypeKeys: true }));
