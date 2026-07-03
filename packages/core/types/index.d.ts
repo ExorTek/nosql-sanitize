@@ -32,18 +32,38 @@ declare namespace noSQLSanitizeCore {
     logSkippedRoutes?: boolean;
   }
 
+  /** Behavior when a value is nested deeper than `maxDepth`. */
+  export type MaxDepthBehavior = 'remove' | 'throw' | 'preserve';
+
+  /** Kind of change reported by an `onSanitize` event. */
+  export type SanitizeEventType = 'value' | 'key' | 'both' | 'removed';
+
+  /** Why a key/value pair was removed (only present when `type === 'removed'`). */
+  export type SanitizeRemoveReason =
+    'deniedKey' | 'notAllowed' | 'prototypePollution' | 'removeMatches' | 'removeEmpty' | 'maxDepth';
+
   /**
-   * Event emitted by the `onSanitize` callback when a value is changed.
+   * Event passed to the `onSanitize` callback.
+   *
+   * Fires for: string value changes, key renames (e.g. `$gt` → `gt`), string
+   * changes inside arrays, and removals (denied/not-allowed/dangerous keys,
+   * `removeMatches`, `removeEmpty`, and `maxDepth` drops).
    */
   export interface SanitizeEvent {
-    /** The object key that was sanitized. */
+    /** What changed. */
+    type: SanitizeEventType;
+    /** Why the pair was removed. Only set when `type === 'removed'`. */
+    reason?: SanitizeRemoveReason;
+    /** The original object key (or array index as a string). */
     key: string;
-    /** The original value before sanitization. */
-    originalValue: string;
-    /** The value after sanitization. */
-    sanitizedValue: string;
-    /** Path to the sanitized key (currently same as `key`). */
+    /** The key after sanitization. Same as `key` unless the key was renamed. */
+    sanitizedKey?: string;
+    /** Full dotted path to the value, e.g. `body.user.tags[2]`. */
     path: string;
+    /** The original value before sanitization. */
+    originalValue: any;
+    /** The value after sanitization. `undefined` for removals. */
+    sanitizedValue: any;
   }
 
   /**
@@ -75,7 +95,8 @@ declare namespace noSQLSanitizeCore {
     /** Custom sanitizer function. Overrides default sanitization. @default null */
     customSanitizer?: ((data: any, options: ResolvedOptions) => any) | null;
     /**
-     * Callback fired when a value is sanitized. Only fires when the value changes.
+     * Callback fired when a value is sanitized, a key is renamed, or a pair is
+     * removed. See {@link SanitizeEvent}.
      * @default null
      */
     onSanitize?: ((event: SanitizeEvent) => void) | null;
@@ -86,10 +107,29 @@ declare namespace noSQLSanitizeCore {
     /**
      * Maximum recursion depth for nested objects.
      * Strings are always sanitized regardless of depth.
-     * `null` = unlimited.
+     * `0` sanitizes only top-level strings. `null` = unlimited.
      * @default null
      */
     maxDepth?: number | null;
+    /**
+     * What happens to values nested deeper than `maxDepth`.
+     * `'preserve'` returns them UNSANITIZED (v2 compatible), `'remove'` drops
+     * them (fail-closed, recommended), `'throw'` rejects the request.
+     * @default 'preserve'
+     */
+    maxDepthBehavior?: MaxDepthBehavior;
+    /**
+     * Preserve email-looking values without sanitizing. Note this also bypasses
+     * custom `patterns`; set to `false` if custom patterns must apply to emails.
+     * @default true
+     */
+    preserveEmails?: boolean;
+    /**
+     * Allow `__proto__` / `constructor` / `prototype` keys through. When `false`
+     * (default) these keys are stripped to prevent prototype pollution.
+     * @default false
+     */
+    allowPrototypeKeys?: boolean;
     /** Regex patterns to match and replace. @default [/\$/g, /control chars/g] */
     patterns?: RegExp[];
     /** Only allow these keys (empty = allow all). @default [] */
@@ -128,6 +168,9 @@ declare namespace noSQLSanitizeCore {
     recursive: boolean;
     removeEmpty: boolean;
     maxDepth: number | null;
+    maxDepthBehavior: MaxDepthBehavior;
+    preserveEmails: boolean;
+    allowPrototypeKeys: boolean;
     patterns: RegExp[];
     allowedKeys: Set<string>;
     deniedKeys: Set<string>;
@@ -170,16 +213,29 @@ declare namespace noSQLSanitizeCore {
   // ── Sanitizers ────────────────────────────────────────────
 
   /**
+   * Sentinel returned by `sanitizeValue` when a value is dropped by the
+   * `maxDepth` guard (`maxDepthBehavior: 'remove'`).
+   */
+  export const REMOVE: unique symbol;
+
+  /**
    * Main dispatch — routes to appropriate sanitizer by type.
    * @param value    - Value to sanitize (string, object, array, or primitive).
    * @param options  - Resolved options.
    * @param isValue  - `true` if this is a value (not an object key).
    * @param depth    - Current recursion depth.
+   * @param path     - Dotted path used for `onSanitize` events.
    */
-  export function sanitizeValue(value: any, options: ResolvedOptions, isValue?: boolean, depth?: number): any;
+  export function sanitizeValue(
+    value: any,
+    options: ResolvedOptions,
+    isValue?: boolean,
+    depth?: number,
+    path?: string,
+  ): any;
 
   /**
-   * Sanitize a single string. Preserves email addresses.
+   * Sanitize a single string. Preserves email addresses when `preserveEmails`.
    */
   export function sanitizeString(str: any, options: ResolvedOptions, isValue?: boolean): any;
 
@@ -190,12 +246,13 @@ declare namespace noSQLSanitizeCore {
     obj: Record<string, any>,
     options: ResolvedOptions,
     depth?: number,
+    path?: string,
   ): Record<string, any>;
 
   /**
    * Sanitize all elements of an array.
    */
-  export function sanitizeArray(arr: any[], options: ResolvedOptions, depth?: number): any[];
+  export function sanitizeArray(arr: any[], options: ResolvedOptions, depth?: number, path?: string): any[];
 
   export function isString(value: any): value is string;
   export function isArray(value: any): value is any[];
@@ -230,6 +287,8 @@ declare namespace noSQLSanitizeCore {
 
   /** Default sanitization patterns: `$` operator + control characters. */
   export const PATTERNS: ReadonlyArray<RegExp>;
+  /** Keys blocked by default to prevent prototype pollution. */
+  export const DANGEROUS_KEYS: ReadonlySet<string>;
   /** Default options before user overrides. */
   export const DEFAULT_OPTIONS: Readonly<SanitizeOptions>;
   /** Numeric log level mapping. */

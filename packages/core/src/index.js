@@ -1,8 +1,8 @@
 'use strict';
 
-const { DEFAULT_OPTIONS, PATTERNS, LOG_LEVELS, LOG_COLORS } = require('./constants');
+const { DEFAULT_OPTIONS, DANGEROUS_KEYS, PATTERNS, LOG_LEVELS, LOG_COLORS } = require('./constants');
 const { NoSQLSanitizeError } = require('./errors');
-const { sanitizeString, sanitizeArray, sanitizeObject, sanitizeValue } = require('./sanitizers');
+const { sanitizeString, sanitizeArray, sanitizeObject, sanitizeValue, REMOVE } = require('./sanitizers');
 const helpers = require('./helpers');
 
 /**
@@ -75,7 +75,8 @@ const resolveOptions = (userOptions = {}) => {
   opts.allowedKeys = new Set(userOptions.allowedKeys || []);
   opts.deniedKeys = new Set(userOptions.deniedKeys || []);
 
-  // Set max depth constraint for nested object parsing to prevent stack overflow/ReDoS attacks
+  // Set max depth constraint for nested object parsing to prevent stack overflow/ReDoS attacks.
+  // Data deeper than this is handled per `maxDepthBehavior` (default: removed, never passed through raw).
   opts.maxDepth = userOptions.maxDepth !== undefined ? userOptions.maxDepth : null;
 
   // Assign the optional custom callback for post-sanitization hooks
@@ -176,12 +177,24 @@ const handleRequest = (request, options) => {
 
     helpers.log(debug, 'debug', 'REQUEST', `Sanitizing '${field}'`);
 
-    // Create a shallow clone of the data to avoid mutating references unexpectedly
-    // before applying the sanitization logic
-    const original = Array.isArray(data) ? [...data] : helpers.isPlainObject(data) ? { ...data } : data;
+    let sanitized;
+    if (customSanitizer) {
+      // A shallow clone protects the caller's original object from an external
+      // sanitizer that might mutate its input in place.
+      const input = Array.isArray(data) ? [...data] : helpers.isPlainObject(data) ? { ...data } : data;
+      sanitized = customSanitizer(input, options);
+    } else {
+      // The built-in sanitizer always writes into a fresh object/array and never
+      // mutates its input, so no top-level clone is needed here. The field name
+      // seeds the onSanitize path (e.g. "body.user.$gt").
+      sanitized = sanitizeValue(data, options, false, 0, field);
+    }
 
-    // Route the data through a custom sanitizer if provided, otherwise use the internal one
-    const sanitized = customSanitizer ? customSanitizer(original, options) : sanitizeValue(original, options);
+    // Fail-closed guard: if the root itself was dropped (e.g. maxDepth: 0 with an
+    // object/array body), emit an empty container instead of leaking raw input.
+    if (sanitized === REMOVE) {
+      sanitized = Array.isArray(data) ? [] : {};
+    }
 
     // Specific workaround for Express 5+: 'req.query' might be defined as non-writable via getter/setter.
     // If it's writable, do a standard assignment. If not, forcefully redefine the property.
@@ -255,9 +268,11 @@ module.exports = {
   sanitizeArray,
   sanitizeObject,
   sanitizeValue,
+  REMOVE,
 
   ...helpers,
 
+  DANGEROUS_KEYS,
   DEFAULT_OPTIONS,
   PATTERNS,
   LOG_LEVELS,

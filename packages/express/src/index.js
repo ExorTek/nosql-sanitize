@@ -19,7 +19,7 @@ const expressMongoSanitize = (options = {}) => {
 
   log(opts.debug, 'info', 'PLUGIN', 'Initializing nosql-sanitize plugin', {
     mode: opts.mode,
-    sanitizeObjects: [...opts.sanitizeObjects] || opts.sanitizeObjects,
+    sanitizeObjects: opts.sanitizeObjects,
   });
 
   return (req, res, next) => {
@@ -54,7 +54,7 @@ const paramSanitizeHandler = (options = {}) => {
   const opts = resolveOptions(options);
   log(opts.debug, 'info', 'PLUGIN', 'Initializing nosql-sanitize param handler', {
     mode: opts.mode,
-    sanitizeObjects: [...opts.sanitizeObjects] || opts.sanitizeObjects,
+    sanitizeObjects: opts.sanitizeObjects,
   });
 
   return function (req, res, next, value, paramName) {
