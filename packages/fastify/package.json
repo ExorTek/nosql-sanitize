@@ -1,6 +1,6 @@
 {
   "name": "@exortek/fastify-mongo-sanitize",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "Fastify plugin for NoSQL injection prevention — sanitizes request data",
   "main": "src/index.js",
   "type": "commonjs",
@@ -44,7 +44,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@exortek/nosql-sanitize-core": "^2.0.0",
+    "@exortek/nosql-sanitize-core": "^3.0.0",
     "fastify-plugin": "^5.1.0"
   },
   "peerDependencies": {
@@ -56,7 +56,7 @@
     }
   },
   "devDependencies": {
-    "fastify": "npm:fastify@5.8.2",
+    "fastify": "npm:fastify@5.9.0",
     "fastify4": "npm:fastify@4.29.1"
   },
   "files": [

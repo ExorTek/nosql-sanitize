@@ -20,9 +20,9 @@
     "format": "prettier --write \"**/**/*.{js,ts,json}\""
   },
   "devDependencies": {
-    "prettier": "^3.8.1"
+    "prettier": "^3.9.4"
   },
-  "packageManager": "yarn@4.13.0",
+  "packageManager": "yarn@4.17.0",
   "engines": {
     "node": ">=20.0.0"
   }

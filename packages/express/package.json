@@ -1,6 +1,6 @@
 {
   "name": "@exortek/express-mongo-sanitize",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "Express middleware for NoSQL injection prevention — sanitizes request data",
   "main": "src/index.js",
   "type": "commonjs",
@@ -44,7 +44,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@exortek/nosql-sanitize-core": "^2.0.0"
+    "@exortek/nosql-sanitize-core": "^3.0.0"
   },
   "peerDependencies": {
     "express": ">=4.0.0"
@@ -57,7 +57,7 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "express": "npm:express@5.2.1",
-    "express4": "npm:express@4.22.1"
+    "express4": "npm:express@4.22.2"
   },
   "files": [
     "src/",

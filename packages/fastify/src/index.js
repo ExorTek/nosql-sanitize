@@ -11,7 +11,7 @@ const fastifyMongoSanitize = (fastify, options, done) => {
 
   log(opts.debug, 'info', 'PLUGIN', 'Initializing nosql-sanitize plugin', {
     mode: opts.mode,
-    sanitizeObjects: [...opts.sanitizeObjects] || opts.sanitizeObjects,
+    sanitizeObjects: opts.sanitizeObjects,
   });
 
   if (opts.mode === 'manual') {

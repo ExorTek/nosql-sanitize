@@ -101,7 +101,11 @@ const validators = Object.freeze({
   onSanitize: (v) => v === null || isFunction(v),
   recursive: isBoolean,
   removeEmpty: isBoolean,
-  maxDepth: (v) => v === null || (isNumber(v) && v > 0),
+  // maxDepth:0 is now valid ("only top-level string sanitization").
+  maxDepth: (v) => v === null || (isNumber(v) && v >= 0),
+  maxDepthBehavior: (v) => ['preserve', 'remove', 'throw'].includes(v),
+  preserveEmails: isBoolean,
+  allowPrototypeKeys: isBoolean,
   patterns: isArray,
   allowedKeys: (v) => v === null || isArray(v),
   deniedKeys: (v) => v === null || isArray(v),

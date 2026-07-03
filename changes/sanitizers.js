@@ -144,6 +144,9 @@ const sanitizeObject = (obj, options, depth, path = '') => {
 
     const sanitizedKey = sanitizeString(key, options);
 
+    // Prototype-pollution guard. Checking only the sanitized key is sufficient:
+    // sanitizing never turns a dangerous key into a safe one, and a smuggled
+    // "__pro\u0000to__" collapses to "__proto__" here.
     if (!allowPrototypeKeys && DANGEROUS_KEYS.has(sanitizedKey)) {
       if (auditing)
         onSanitize({

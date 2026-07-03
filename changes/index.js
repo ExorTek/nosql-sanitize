@@ -272,8 +272,8 @@ module.exports = {
 
   ...helpers,
 
-  DANGEROUS_KEYS,
   DEFAULT_OPTIONS,
+  DANGEROUS_KEYS,
   PATTERNS,
   LOG_LEVELS,
   LOG_COLORS,

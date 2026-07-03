@@ -454,9 +454,8 @@ test('maxDepth — stops recursion at limit', () => {
     nested: { level2: '$danger', deep: { level3: '$hidden' } },
   };
   const result = sanitizeValue(input, o);
-  // depth 0 → object keys/values sanitized (strings always sanitized)
   assert.strictEqual(result.level1, 'admin');
-  // depth 1 → nested object NOT recursed into
+  // depth 1 → nested object preserved unsanitized (default maxDepthBehavior: 'preserve')
   assert.deepStrictEqual(result.nested, { level2: '$danger', deep: { level3: '$hidden' } });
 });
 
@@ -472,14 +471,14 @@ test('maxDepth — depth 2 sanitizes 2 levels deep', () => {
   const input = { a: { b: '$ok', c: { d: '$stop' } } };
   const result = sanitizeValue(input, o);
   assert.strictEqual(result.a.b, 'ok'); // string at depth 1 — always sanitized
-  assert.strictEqual(result.a.c.d, '$stop'); // depth 2 → object not recursed
+  assert.strictEqual(result.a.c.d, '$stop'); // depth 2 → object preserved unsanitized
 });
 
 test('maxDepth — arrays count as depth', () => {
   const o = opts({ maxDepth: 1 });
   const input = [{ name: '$admin' }];
   const result = sanitizeValue(input, o);
-  // array at depth 0 → enters array (depth 1), object inside at depth 1 >= maxDepth → not recursed
+  // array at depth 0 → enters array (depth 1), object inside at depth 1 >= maxDepth → preserved unsanitized
   assert.deepStrictEqual(result, [{ name: '$admin' }]);
 });
 

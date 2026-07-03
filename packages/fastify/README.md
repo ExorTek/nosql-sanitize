@@ -44,9 +44,13 @@ fastify.register(mongoSanitize, {
   mode: 'auto',             // 'auto' | 'manual'
   skipRoutes: [],            // Routes to skip (string or RegExp)
   recursive: true,           // Sanitize nested objects
-  maxDepth: null,            // Max recursion depth (null = unlimited)
-  onSanitize: ({ key, originalValue, sanitizedValue }) => {
-    fastify.log.warn(`Sanitized ${key}`);
+  maxDepth: null,            // Max recursion depth (0 = top-level only, null = unlimited)
+  maxDepthBehavior: 'preserve', // 'preserve' (default) | 'remove' (recommended) | 'throw'
+  preserveEmails: true,      // Preserve email-looking values (also bypasses custom patterns)
+  allowPrototypeKeys: false, // Block __proto__/constructor/prototype keys
+  onSanitize: (event) => {
+    // event: { type, reason?, key, sanitizedKey, path, originalValue, sanitizedValue }
+    fastify.log.warn(`Sanitized at ${event.path}: ${event.type}`);
   }
 });
 ```
@@ -92,6 +96,13 @@ app.post('/test', async (request) => {
   return request.body;
 });
 ```
+
+## 🔒 Security Defaults
+
+- **Prototype pollution protection**: `__proto__`, `constructor`, `prototype` keys are stripped by default.
+- **Configurable depth limiting**: Set `maxDepthBehavior: 'remove'` for fail-closed security (recommended).
+- **Email preservation**: Email-looking values are preserved without sanitization by default.
+- **Fastify null-proto query support**: Correctly handles Fastify's null-prototype query objects.
 
 ## 📜 License
 
