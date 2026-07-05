@@ -22,8 +22,8 @@
 
 ## 📦 Packages
 
-| Package                                                  | Purpose            | Installation                            |
-|----------------------------------------------------------|--------------------|-----------------------------------------|
+| Package                                                 | Purpose            | Installation                            |
+|---------------------------------------------------------|--------------------|-----------------------------------------|
 | [`@exortek/express-mongo-sanitize`](./packages/express) | Express Middleware | `npm i @exortek/express-mongo-sanitize` |
 | [`@exortek/fastify-mongo-sanitize`](./packages/fastify) | Fastify Plugin     | `npm i @exortek/fastify-mongo-sanitize` |
 | [`@exortek/nosql-sanitize-core`](./packages/core)       | Core Engine        | `npm i @exortek/nosql-sanitize-core`    |
@@ -80,26 +80,26 @@ fastify.post('/login', async (request) => {
 
 All packages (`express`, `fastify`) accept the same configuration options, which are passed to the core engine.
 
-| Option               | Type                   | Default                                      | Description                                                                   |
-|:---------------------|:-----------------------|:---------------------------------------------|:------------------------------------------------------------------------------|
-| `replaceWith`        | `string`               | `''`                                         | String to replace matched patterns (like `$`) with.                          |
-| `removeMatches`      | `boolean`              | `false`                                      | If `true`, removes the entire key-value pair if a match is found.            |
-| `sanitizeObjects`    | `string[]`             | `['body', 'query']`                          | Fields on the request object to sanitize.                                     |
-| `contentTypes`       | `string[] \| null`     | `['application/json', 'application/x-www-form-urlencoded']` | Only sanitize `body` for these content types. `null` = all. |
-| `skipRoutes`         | `(string \| RegExp)[]` | `[]`                                         | Routes to ignore during auto-sanitization.                                    |
-| `recursive`          | `boolean`              | `true`                                       | Whether to recursively sanitize nested objects/arrays.                        |
-| `maxDepth`           | `number \| null`       | `null`                                       | Maximum recursion depth. `0` = top-level strings only. `null` = unlimited.   |
-| `maxDepthBehavior`   | `string`               | `'preserve'`                                 | Action when `maxDepth` exceeded. See [Depth Limiting](#depth-limiting).      |
-| `preserveEmails`     | `boolean`              | `true`                                       | Preserve email-looking values. See [Email Preservation](#email-preservation). |
-| `allowPrototypeKeys` | `boolean`              | `false`                                      | Allow `__proto__` / `constructor` / `prototype` keys.                        |
-| `allowedKeys`        | `string[]`             | `[]`                                         | Keys to allow without sanitization (e.g., `['$set']`).                        |
-| `deniedKeys`         | `string[]`             | `[]`                                         | Keys to completely remove from the input.                                     |
-| `removeEmpty`        | `boolean`              | `false`                                      | Remove keys with empty/falsy values after sanitization.                       |
-| `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`           | Regex patterns to match. Override to add custom patterns.                     |
-| `customSanitizer`    | `function \| null`     | `null`                                       | Replace the built-in sanitizer with your own function.                        |
-| `mode`               | `'auto' \| 'manual'`   | `'auto'`                                     | `'auto'` sanitizes on every request. `'manual'` exposes `req.sanitize()`.     |
-| `onSanitize`         | `function \| null`     | `null`                                       | Audit callback. See [onSanitize Events](#onsanitize-events).                  |
-| `debug.enabled`      | `boolean`              | `false`                                      | Enable detailed logging for debugging.                                        |
+| Option               | Type                   | Default                                                     | Description                                                                   |
+|:---------------------|:-----------------------|:------------------------------------------------------------|:------------------------------------------------------------------------------|
+| `replaceWith`        | `string`               | `''`                                                        | String to replace matched patterns (like `$`) with.                           |
+| `removeMatches`      | `boolean`              | `false`                                                     | If `true`, removes the entire key-value pair if a match is found.             |
+| `sanitizeObjects`    | `string[]`             | `['body', 'query']`                                         | Fields on the request object to sanitize.                                     |
+| `contentTypes`       | `string[] \| null`     | `['application/json', 'application/x-www-form-urlencoded']` | Only sanitize `body` for these content types. `null` = all.                   |
+| `skipRoutes`         | `(string \| RegExp)[]` | `[]`                                                        | Routes to ignore during auto-sanitization.                                    |
+| `recursive`          | `boolean`              | `true`                                                      | Whether to recursively sanitize nested objects/arrays.                        |
+| `maxDepth`           | `number \| null`       | `null`                                                      | Maximum recursion depth. `0` = top-level strings only. `null` = unlimited.    |
+| `maxDepthBehavior`   | `string`               | `'preserve'`                                                | Action when `maxDepth` exceeded. See [Depth Limiting](#depth-limiting).       |
+| `preserveEmails`     | `boolean`              | `true`                                                      | Preserve email-looking values. See [Email Preservation](#email-preservation). |
+| `allowPrototypeKeys` | `boolean`              | `false`                                                     | Allow `__proto__` / `constructor` / `prototype` keys.                         |
+| `allowedKeys`        | `string[]`             | `[]`                                                        | Keys to allow without sanitization (e.g., `['$set']`).                        |
+| `deniedKeys`         | `string[]`             | `[]`                                                        | Keys to completely remove from the input.                                     |
+| `removeEmpty`        | `boolean`              | `false`                                                     | Remove keys with empty/falsy values after sanitization.                       |
+| `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Regex patterns to match. Override to add custom patterns.                     |
+| `customSanitizer`    | `function \| null`     | `null`                                                      | Replace the built-in sanitizer with your own function.                        |
+| `mode`               | `'auto' \| 'manual'`   | `'auto'`                                                    | `'auto'` sanitizes on every request. `'manual'` exposes `req.sanitize()`.     |
+| `onSanitize`         | `function \| null`     | `null`                                                      | Audit callback. See [onSanitize Events](#onsanitize-events).                  |
+| `debug.enabled`      | `boolean`              | `false`                                                     | Enable detailed logging for debugging.                                        |
 
 ### String Options
 
@@ -142,15 +142,15 @@ app.use(mongoSanitize({
 
 **Event shape:**
 
-| Field            | Description                                                                                                                     |
-|:-----------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| `type`           | `'value'`, `'key'`, `'both'`, or `'removed'`                                                                                    |
+| Field            | Description                                                                                                                   |
+|:-----------------|:------------------------------------------------------------------------------------------------------------------------------|
+| `type`           | `'value'`, `'key'`, `'both'`, or `'removed'`                                                                                  |
 | `reason`         | Only for `'removed'`: `'deniedKey'`, `'notAllowed'`, `'prototypePollution'`, `'removeMatches'`, `'removeEmpty'`, `'maxDepth'` |
-| `key`            | Original key (e.g., `'$gt'`)                                                                                                     |
-| `sanitizedKey`   | Key after sanitization (e.g., `'gt'`)                                                                                            |
-| `path`           | Full dotted path (e.g., `'body.user.$gt'`)                                                                                       |
-| `originalValue`  | Value before sanitization                                                                                                        |
-| `sanitizedValue` | Value after sanitization (`undefined` for removals)                                                                              |
+| `key`            | Original key (e.g., `'$gt'`)                                                                                                  |
+| `sanitizedKey`   | Key after sanitization (e.g., `'gt'`)                                                                                         |
+| `path`           | Full dotted path (e.g., `'body.user.$gt'`)                                                                                    |
+| `originalValue`  | Value before sanitization                                                                                                     |
+| `sanitizedValue` | Value after sanitization (`undefined` for removals)                                                                           |
 
 **Note:** `onSanitize` adds overhead. If you don't need audit logging, leave it `null` for maximum performance.
 
