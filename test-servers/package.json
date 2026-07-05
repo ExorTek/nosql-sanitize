@@ -1,0 +1,21 @@
+{
+  "name": "nosql-sanitize-test-servers",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Integration test servers for all framework versions",
+  "scripts": {
+    "express4": "node express4-server.js",
+    "express5": "node express5-server.js",
+    "fastify4": "node fastify4-server.js",
+    "fastify5": "node fastify5-server.js",
+    "test": "node run-all-tests.js"
+  },
+  "dependencies": {
+    "@exortek/express-mongo-sanitize": "workspace:*",
+    "@exortek/fastify-mongo-sanitize": "workspace:*",
+    "express4": "npm:express@4.22.2",
+    "express5": "npm:express@5.2.1",
+    "fastify4": "npm:fastify@4.29.1",
+    "fastify5": "npm:fastify@5.9.0"
+  }
+}

@@ -2,13 +2,15 @@
   "name": "nosql-sanitize",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "test-servers"
   ],
   "scripts": {
     "test": "yarn workspaces foreach -A --parallel run test",
     "test:core": "yarn workspace @exortek/nosql-sanitize-core run test",
     "test:express": "yarn workspace @exortek/express-mongo-sanitize run test",
     "test:fastify": "yarn workspace @exortek/fastify-mongo-sanitize run test",
+    "test:servers": "node test-servers/run-all-tests.js",
     "bench": "node --expose-gc benchmarks/index.js",
     "bench:save": "node --expose-gc benchmarks/index.js --save",
     "bench:compare": "node --expose-gc benchmarks/index.js --save --compare",
