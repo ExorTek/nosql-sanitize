@@ -20,6 +20,21 @@
 - **TypeScript Ready**: Built-in, high-quality type definitions.
 - **Security First**: Preserves sensitive data like email addresses while stripping injection vectors.
 
+## 📑 Contents
+
+- [Packages](#-packages)
+- [Why?](#-why)
+- [Quick Start](#-quick-start)
+- [Compatibility](#-compatibility)
+- [Configuration Options](#️-configuration-options)
+- [Security](#-security)
+- [Advanced Usage](#-advanced-usage)
+- [Performance](#-performance)
+- [Architecture](#-architecture)
+- [Development & Testing](#-development--testing)
+- [Contributing](#-contributing)
+- [License](#-license)
+
 ## 📦 Packages
 
 | Package                                                 | Purpose            | Installation                            |
@@ -27,6 +42,18 @@
 | [`@exortek/express-mongo-sanitize`](./packages/express) | Express Middleware | `npm i @exortek/express-mongo-sanitize` |
 | [`@exortek/fastify-mongo-sanitize`](./packages/fastify) | Fastify Plugin     | `npm i @exortek/fastify-mongo-sanitize` |
 | [`@exortek/nosql-sanitize-core`](./packages/core)       | Core Engine        | `npm i @exortek/nosql-sanitize-core`    |
+
+## ✅ Compatibility
+
+Every framework major below is exercised by the integration test suite (`yarn test:servers`), which boots a real server on each and asserts identical sanitization behaviour.
+
+| Runtime        | Supported       | Verified in CI                     |
+| -------------- | --------------- | ---------------------------------- |
+| **Express**    | `4.x` and `5.x` | ✅ Express 4 + Express 5 servers    |
+| **Fastify**    | `4.x` and `5.x` | ✅ Fastify 4 + Fastify 5 servers    |
+| **Node.js**    | `>= 18`         | ✅                                  |
+| **Modules**    | CommonJS + ESM  | `require()` and `import` both work |
+| **TypeScript** | Bundled `.d.ts` | No `@types/*` needed               |
 
 ## 🤔 Why?
 
@@ -412,7 +439,16 @@ node --expose-gc benchmarks/index.js    # Most accurate (with GC)
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the setup, branch/commit conventions, and the `yarn verify` gate CI runs on every PR. In short:
+
+```bash
+yarn install
+yarn verify   # format:check + unit tests + Express/Fastify 4+5 integration servers
+```
+
+## 🛡 Security
+
+For the supported-version matrix, private vulnerability reporting, and the sanitizer's hardening guarantees, see [`SECURITY.md`](./SECURITY.md). Please do **not** open a public issue for a security bug.
 
 ## 📜 License
 
