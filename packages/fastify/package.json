@@ -56,8 +56,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@exortek/nosql-sanitize-core": "^3.0.0",
-    "fastify-plugin": "^5.1.0"
+    "@exortek/nosql-sanitize-core": "workspace:^",
+    "fastify-plugin": "^6.0.0"
   },
   "peerDependencies": {
     "fastify": ">=4.0.0"
@@ -66,10 +66,6 @@
     "fastify": {
       "optional": false
     }
-  },
-  "devDependencies": {
-    "fastify": "npm:fastify@5.9.0",
-    "fastify4": "npm:fastify@4.29.1"
   },
   "files": [
     "src/",

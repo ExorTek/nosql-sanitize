@@ -14,15 +14,22 @@
     "bench": "node --expose-gc benchmarks/index.js",
     "bench:save": "node --expose-gc benchmarks/index.js --save",
     "bench:compare": "node --expose-gc benchmarks/index.js --save --compare",
-    "publish:core": "cd packages/core && npm publish --access public",
-    "publish:express": "cd packages/express && npm publish --access public",
-    "publish:fastify": "cd packages/fastify && npm publish --access public",
-    "publish:all": "yarn publish:core && yarn publish:express && yarn publish:fastify",
+    "publish:core": "yarn workspace @exortek/nosql-sanitize-core npm publish --access public --tolerate-republish",
+    "publish:express": "yarn workspace @exortek/express-mongo-sanitize npm publish --access public --tolerate-republish",
+    "publish:fastify": "yarn workspace @exortek/fastify-mongo-sanitize npm publish --access public --tolerate-republish",
+    "publish:all": "yarn workspaces foreach -A --topological --no-private npm publish --access public --tolerate-republish",
     "version:all": "npm version --workspaces --no-git-tag-version",
-    "format": "prettier --write \"**/**/*.{js,ts,json}\""
+    "format": "prettier --write \"**/**/*.{js,ts,json}\"",
+    "format:check": "prettier --check \"**/**/*.{js,ts,json}\"",
+    "verify": "yarn format:check && yarn test && yarn test:servers"
   },
   "devDependencies": {
-    "prettier": "^3.9.4"
+    "@types/express": "^5.0.6",
+    "express": "npm:express@5.2.1",
+    "express4": "npm:express@4.22.2",
+    "fastify": "npm:fastify@5.11.2",
+    "fastify4": "npm:fastify@4.29.1",
+    "prettier": "^3.9.6"
   },
   "packageManager": "yarn@4.17.0",
   "engines": {
