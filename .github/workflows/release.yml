@@ -1,0 +1,59 @@
+name: Release
+
+# Manual publish to npm. Bump versions beforehand through a normal
+# "chore: version packages" PR (yarn version:all → commit → PR → merge);
+# this workflow only tests and publishes whatever versions currently sit on
+# master. Trigger it from Actions → Release → "Run workflow", or
+# `gh workflow run release.yml`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Test + pack only, do not publish'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write # OIDC — npm Trusted Publishing (no stored token) + provenance
+
+concurrency: release
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+      - run: corepack enable
+      - run: yarn install --immutable
+
+      # Gate the publish on the full suite — the packages' prepublishOnly hook
+      # is not run by `yarn npm publish`, so run it explicitly here.
+      - run: yarn test
+      - run: yarn test:servers
+
+      # OIDC Trusted Publishing — no NPM_TOKEN. Configure a trusted publisher
+      # for each @exortek/* package on npmjs.com first (repo
+      # ExorTek/nosql-sanitize, workflow release.yml). Yarn detects the GitHub
+      # OIDC environment automatically when id-token:write is granted and no
+      # auth token is set. YARN_NPM_PUBLISH_PROVENANCE attaches build provenance.
+      # `--topological` publishes core before express/fastify (which depend on
+      # it via a caret range resolved from npm); `--no-private` skips the root
+      # and test-servers.
+      - name: Publish to npm (OIDC Trusted Publishing + provenance)
+        if: ${{ !inputs.dry_run }}
+        env:
+          YARN_NPM_PUBLISH_PROVENANCE: 'true'
+        run: |
+          yarn workspaces foreach --all --topological --no-private npm publish --tolerate-republish --access public
+
+      - name: Dry-run notice
+        if: ${{ inputs.dry_run }}
+        run: echo "dry_run=true — tested only, nothing published."
