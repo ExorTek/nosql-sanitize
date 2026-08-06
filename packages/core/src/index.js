@@ -153,9 +153,12 @@ const shouldSanitizeContentType = (request, contentTypes) => {
  */
 const handleRequest = (request, options) => {
   const { sanitizeObjects, customSanitizer, debug, contentTypes } = options;
-  const endTiming = helpers.startTiming(debug, 'Request Sanitization');
+  // Gate all debug work on a single check so the hot path (debug off) pays
+  // nothing — no timing closure allocation, no per-field template strings.
+  const debugOn = debug?.enabled === true;
+  const endTiming = debugOn ? helpers.startTiming(debug, 'Request Sanitization') : null;
 
-  helpers.log(debug, 'info', 'REQUEST', 'Sanitizing request');
+  if (debugOn) helpers.log(debug, 'info', 'REQUEST', 'Sanitizing request');
 
   // Determine early on if the 'body' payload should be processed based on its MIME type
   const shouldSanitizeBody = shouldSanitizeContentType(request, contentTypes);
@@ -163,7 +166,7 @@ const handleRequest = (request, options) => {
   for (const field of sanitizeObjects) {
     // Skip 'body' specifically if the content-type validation failed
     if (field === 'body' && !shouldSanitizeBody) {
-      helpers.log(debug, 'debug', 'REQUEST', 'Skipping body — content-type not in allowed list');
+      if (debugOn) helpers.log(debug, 'debug', 'REQUEST', 'Skipping body — content-type not in allowed list');
       continue;
     }
 
@@ -175,7 +178,7 @@ const handleRequest = (request, options) => {
     // Avoid running expensive sanitization logic on completely empty objects
     if (helpers.isPlainObject(data) && helpers.isObjectEmpty(data)) continue;
 
-    helpers.log(debug, 'debug', 'REQUEST', `Sanitizing '${field}'`);
+    if (debugOn) helpers.log(debug, 'debug', 'REQUEST', `Sanitizing '${field}'`);
 
     let sanitized;
     if (customSanitizer) {
@@ -210,7 +213,7 @@ const handleRequest = (request, options) => {
     }
   }
 
-  endTiming();
+  if (endTiming) endTiming();
 };
 
 /**
