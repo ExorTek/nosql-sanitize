@@ -70,6 +70,7 @@
     "src/",
     "types/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ]
 }
