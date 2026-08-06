@@ -44,7 +44,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@exortek/nosql-sanitize-core": "^3.0.0",
+    "@exortek/nosql-sanitize-core": "workspace:^",
     "fastify-plugin": "^5.1.0"
   },
   "peerDependencies": {

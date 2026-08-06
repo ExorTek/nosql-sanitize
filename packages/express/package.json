@@ -44,7 +44,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@exortek/nosql-sanitize-core": "^3.0.0"
+    "@exortek/nosql-sanitize-core": "workspace:^"
   },
   "peerDependencies": {
     "express": ">=4.0.0"
