@@ -54,11 +54,6 @@
       "optional": false
     }
   },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "express": "npm:express@5.2.1",
-    "express4": "npm:express@4.22.2"
-  },
   "files": [
     "src/",
     "types/",

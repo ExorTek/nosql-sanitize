@@ -55,10 +55,6 @@
       "optional": false
     }
   },
-  "devDependencies": {
-    "fastify": "npm:fastify@5.9.0",
-    "fastify4": "npm:fastify@4.29.1"
-  },
   "files": [
     "src/",
     "types/",

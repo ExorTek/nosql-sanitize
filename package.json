@@ -22,7 +22,12 @@
     "format": "prettier --write \"**/**/*.{js,ts,json}\""
   },
   "devDependencies": {
-    "prettier": "^3.9.4"
+    "@types/express": "^5.0.6",
+    "express": "npm:express@5.2.1",
+    "express4": "npm:express@4.22.2",
+    "fastify": "npm:fastify@5.11.2",
+    "fastify4": "npm:fastify@4.29.1",
+    "prettier": "^3.9.6"
   },
   "packageManager": "yarn@4.17.0",
   "engines": {
