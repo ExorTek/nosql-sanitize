@@ -18,12 +18,14 @@
     "publish:express": "yarn workspace @exortek/express-mongo-sanitize npm publish --access public --tolerate-republish",
     "publish:fastify": "yarn workspace @exortek/fastify-mongo-sanitize npm publish --access public --tolerate-republish",
     "publish:all": "yarn workspaces foreach -A --topological --no-private npm publish --access public --tolerate-republish",
-    "version:all": "npm version --workspaces --no-git-tag-version",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
     "format": "prettier --write \"**/**/*.{js,ts,json}\"",
     "format:check": "prettier --check \"**/**/*.{js,ts,json}\"",
     "verify": "yarn format:check && yarn test && yarn test:servers"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.1",
     "@types/express": "^5.0.6",
     "express": "npm:express@5.2.1",
     "express4": "npm:express@4.22.2",

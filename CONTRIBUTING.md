@@ -113,13 +113,23 @@ test and, where the framework boundary matters, the integration servers.
 
 ## Publishing
 
-Releases are **manual** and run from `master`:
+Versioning is driven by [Changesets](https://github.com/changesets/changesets); publishing is **manual** from `master`:
 
-1. Bump versions across the workspaces (`yarn version:all` or edit `package.json` versions deliberately).
-2. Publish via the **Release** GitHub Actions workflow (`.github/workflows/release.yml`) — Actions tab → Release →
+1. **Author a changeset while your feature branch is open** (skip for refactor/docs-only work that ships no user-facing
+   change):
+   ```bash
+   yarn changeset
+   ```
+   Pick the affected packages and a bump level (patch / minor / major), and describe the change from the user's
+   perspective. This writes a file under `.changeset/` — commit it with your PR.
+2. **Merge the PR.** The changeset file rides along on `master`.
+3. **Cut the version bump.** A maintainer runs `yarn changeset:version`, which consumes the pending changesets, bumps
+   each affected `package.json`, updates dependents through the `workspace:^` range, and writes `CHANGELOG.md` per
+   package. Commit this as a `chore: version packages` PR and merge it.
+4. **Publish.** Run the **Release** GitHub Actions workflow (`.github/workflows/release.yml`) — Actions tab → Release →
    "Run workflow" — or, as a local fallback, `yarn publish:all`.
 
-Do not publish from a feature branch.
+Do not bump versions by hand, and do not publish from a feature branch.
 
 ## Reporting security issues
 

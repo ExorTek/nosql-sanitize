@@ -1,6 +1,6 @@
 {
   "name": "@exortek/express-mongo-sanitize",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Express middleware for NoSQL injection prevention — sanitizes request data",
   "main": "src/index.js",
   "type": "commonjs",
@@ -70,6 +70,7 @@
     "src/",
     "types/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ]
 }
