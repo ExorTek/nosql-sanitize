@@ -137,7 +137,7 @@ const nestedValidators = Object.freeze({
     maxLength: (v) => v === null || (Number.isInteger(v) && v > 0),
   },
   arrayOptions: {
-    filterNull: isBoolean,
+    filterNull: (v) => isBoolean(v) || v === 'falsy' || v === 'nullish',
     distinct: isBoolean,
   },
   debug: {

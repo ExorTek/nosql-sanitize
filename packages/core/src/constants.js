@@ -84,6 +84,7 @@ const DEFAULT_OPTIONS = deepFreeze({
     maxLength: null,
   },
   arrayOptions: {
+    // true / 'falsy' → drop falsy items; 'nullish' → drop null and undefined only
     filterNull: false,
     distinct: false,
   },

@@ -91,7 +91,9 @@ const sanitizeArray = (arr, options, depth, path = '') => {
 
   let out = result;
   if (removed) out = out.filter((x) => x !== REMOVE);
-  if (arrayOptions.filterNull) out = out.filter(Boolean);
+  // true / 'falsy' drop every falsy item; 'nullish' only null and undefined
+  if (arrayOptions.filterNull === 'nullish') out = out.filter((x) => x != null);
+  else if (arrayOptions.filterNull) out = out.filter(Boolean);
   if (arrayOptions.distinct) out = [...new Set(out)];
   return out;
 };
