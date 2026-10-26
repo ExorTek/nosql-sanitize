@@ -1,0 +1,30 @@
+version: 2
+updates:
+  # Root + all workspaces (packages/*, test-servers) through the shared yarn.lock.
+  # Grouped into one PR to keep the noise low.
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      npm:
+        patterns: ['*']
+    ignore:
+      # Version-pinned aliases that exist to test the previous framework major
+      # (Express 4 / Fastify 4). Patch/minor bumps within that line still come through.
+      - dependency-name: express4
+        update-types: ['version-update:semver-major']
+      - dependency-name: fastify4
+        update-types: ['version-update:semver-major']
+      - dependency-name: fastify-multipart8
+        update-types: ['version-update:semver-major']
+
+  # Keep the CI / CodeQL / release action pins current.
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
