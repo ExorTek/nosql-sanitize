@@ -66,9 +66,12 @@ test('hasInjection finds prototype keys unless allowPrototypeKeys', () => {
   assert.strictEqual(hasInjection({ constructor: 'x' }, { allowPrototypeKeys: true }), false);
 });
 
-test('hasInjection exempts emails with preserveEmails', () => {
-  assert.strictEqual(hasInjection({ email: 'a$b@example.com' }), false);
-  assert.strictEqual(hasInjection({ email: 'a$b@example.com' }, { preserveEmails: false }), true);
+test('hasInjection exempts emails with preserveEmails, like the sanitizer', () => {
+  // The default patterns can't match a valid email, so use one that does
+  const patterns = [/example/];
+  assert.strictEqual(hasInjection({ email: 'ada@example.com' }, { patterns }), false);
+  assert.strictEqual(hasInjection({ email: 'ada@example.com' }, { patterns, preserveEmails: false }), true);
+  assert.strictEqual(hasInjection({ 'ada@example.com': 1 }, { patterns }), false);
 });
 
 test('hasInjection ignores allowed operators but checks their contents', () => {
@@ -115,4 +118,19 @@ test('hasInjection throws max_depth on hostile nesting', () => {
     () => hasInjection(root),
     (err) => err instanceof NoSQLSanitizeError && err.type === 'max_depth',
   );
+});
+
+test('hasInjection agrees with sanitize on whether anything changes', () => {
+  const samples = [
+    { a: 1, b: 'x', c: [1, 'y', { d: null }] },
+    { a: { $gt: 1 } },
+    { list: ['ok', 'n$t'] },
+    JSON.parse('{"__proto__": 1, "ok": 2}'),
+    { 'a\u0001b': 1 },
+    { nested: [[[{ deep: 'clean' }]]] },
+  ];
+  for (const sample of samples) {
+    const changed = JSON.stringify(sanitize(sample)) !== JSON.stringify(sample);
+    assert.strictEqual(hasInjection(sample), changed, JSON.stringify(sample));
+  }
 });
