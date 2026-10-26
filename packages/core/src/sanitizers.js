@@ -24,12 +24,17 @@ const sanitizeString = (str, options, isValue = false) => {
   // Function replacer: `replaceWith` is inserted literally, never expanded as $& / $1
   let result = str.replace(_combinedPattern, () => replaceWith);
 
-  if (stringOptions.trim) result = result.trim();
-  if (stringOptions.lowercase) result = result.toLowerCase();
-  if (stringOptions.maxLength && isValue) result = result.slice(0, stringOptions.maxLength);
+  // stringOptions shape values only; keys keep their casing and whitespace
+  if (isValue) {
+    if (stringOptions.trim) result = result.trim();
+    if (stringOptions.lowercase) result = result.toLowerCase();
+    if (stringOptions.maxLength) result = result.slice(0, stringOptions.maxLength);
+  }
 
+  // Values may carry tokens or PII: only log them when explicitly asked to
   if (debug?.enabled && original !== result) {
-    log(debug, 'debug', 'STRING', 'Sanitized', { original, result });
+    if (debug.logSanitizedValues) log(debug, 'debug', 'STRING', 'Sanitized', { original, result });
+    else if (debug.logPatternMatches) log(debug, 'debug', 'STRING', 'Pattern matched');
   }
   return result;
 };

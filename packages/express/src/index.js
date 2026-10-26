@@ -60,9 +60,17 @@ const paramSanitizeHandler = (options = {}) => {
   return function (req, res, next, value, paramName) {
     const key = paramName || this?.name;
     if (key && req.params && isString(value)) {
-      req.params[key] = sanitizeString(value, opts, true);
+      const sanitized = sanitizeString(value, opts, true);
+      req.params[key] = sanitized;
+      // Raw param values (ids, tokens) are only logged with logSanitizedValues
+      log(
+        opts.debug,
+        'info',
+        'PLUGIN',
+        'Param sanitized',
+        opts.debug.logSanitizedValues ? { key, original: value, result: sanitized } : { key },
+      );
     }
-    log(opts.debug, 'info', 'PLUGIN', 'Param sanitized', { key, value });
     next();
   };
 };
