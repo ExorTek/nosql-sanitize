@@ -59,12 +59,13 @@ const DEFAULT_OPTIONS = deepFreeze({
   // true / 'falsy' → drop falsy values ('', null, undefined, 0, false)
   // 'empty'        → drop '', null, undefined, {} and [] only
   removeEmpty: false,
-  maxDepth: null,
+  // null → no limit below the HARD_MAX_DEPTH ceiling
+  maxDepth: 32,
   // What to do with values nested deeper than `maxDepth`.
-  //   'preserve' → return the value UNSANITIZED (v2 compatible, default)
-  //   'remove'   → drop the over-depth value (fail-closed, recommended)
+  //   'preserve' → return the value UNSANITIZED (v3 default, fail-open)
+  //   'remove'   → drop the over-depth value (fail-closed, default)
   //   'throw'    → throw NoSQLSanitizeError
-  maxDepthBehavior: 'preserve',
+  maxDepthBehavior: 'remove',
   // Email-looking values are exempt from sanitization when true.
   // NOTE: this exemption also bypasses any custom `patterns`. Set to false
   // if you supply custom patterns that must apply to email values too.

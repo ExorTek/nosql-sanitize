@@ -448,14 +448,14 @@ test('removeMatches — no lastIndex leakage in pattern.test', () => {
 });
 
 test('maxDepth — stops recursion at limit', () => {
-  const o = opts({ maxDepth: 1 });
+  const o = opts({ maxDepth: 1, maxDepthBehavior: 'preserve' });
   const input = {
     level1: '$admin',
     nested: { level2: '$danger', deep: { level3: '$hidden' } },
   };
   const result = sanitizeValue(input, o);
   assert.strictEqual(result.level1, 'admin');
-  // depth 1 → nested object preserved unsanitized (default maxDepthBehavior: 'preserve')
+  // depth 1 → nested object preserved unsanitized (maxDepthBehavior: 'preserve')
   assert.deepStrictEqual(result.nested, { level2: '$danger', deep: { level3: '$hidden' } });
 });
 
@@ -467,7 +467,7 @@ test('maxDepth — null means unlimited', () => {
 });
 
 test('maxDepth — depth 2 sanitizes 2 levels deep', () => {
-  const o = opts({ maxDepth: 2 });
+  const o = opts({ maxDepth: 2, maxDepthBehavior: 'preserve' });
   const input = { a: { b: '$ok', c: { d: '$stop' } } };
   const result = sanitizeValue(input, o);
   assert.strictEqual(result.a.b, 'ok'); // string at depth 1 — always sanitized
@@ -475,7 +475,7 @@ test('maxDepth — depth 2 sanitizes 2 levels deep', () => {
 });
 
 test('maxDepth — arrays count as depth', () => {
-  const o = opts({ maxDepth: 1 });
+  const o = opts({ maxDepth: 1, maxDepthBehavior: 'preserve' });
   const input = [{ name: '$admin' }];
   const result = sanitizeValue(input, o);
   // array at depth 0 → enters array (depth 1), object inside at depth 1 >= maxDepth → preserved unsanitized

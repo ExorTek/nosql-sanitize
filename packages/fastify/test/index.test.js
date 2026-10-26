@@ -423,7 +423,8 @@ for (const { name, factory } of fastifyVersions) {
 
     const data = response.json();
     assert.strictEqual(data.name, 'admin');
-    assert.deepStrictEqual(data.nested, { inner: '$danger' });
+    // Over-depth values are dropped (maxDepthBehavior: 'remove')
+    assert.strictEqual(data.nested, undefined);
     await fastify.close();
   });
 }

@@ -395,7 +395,8 @@ for (const version of expressVersions) {
     assert.strictEqual(response.status, 200);
     const data = await response.json();
     assert.strictEqual(data.name, 'admin');
-    assert.deepStrictEqual(data.nested, { inner: '$danger' });
+    // Over-depth values are dropped (maxDepthBehavior: 'remove')
+    assert.strictEqual(data.nested, undefined);
     server.close();
   });
 }

@@ -160,14 +160,14 @@ declare namespace noSQLSanitizeCore {
      * Strings are always sanitized regardless of depth.
      * `0` sanitizes only top-level strings. `null` = no limit, but nesting past
      * 256 levels throws a `max_depth` NoSQLSanitizeError instead of overflowing the stack.
-     * @default null
+     * @default 32
      */
     maxDepth?: number | null;
     /**
      * What happens to values nested deeper than `maxDepth`.
-     * `'preserve'` returns them UNSANITIZED (v2 compatible), `'remove'` drops
-     * them (fail-closed, recommended), `'throw'` rejects the request.
-     * @default 'preserve'
+     * `'remove'` drops them (fail-closed), `'preserve'` returns them UNSANITIZED
+     * (v3 default), `'throw'` rejects the request.
+     * @default 'remove'
      */
     maxDepthBehavior?: MaxDepthBehavior;
     /**
