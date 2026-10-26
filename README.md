@@ -115,14 +115,14 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `contentTypes`       | `string[] \| null`     | `['application/json', 'application/x-www-form-urlencoded']` | Only sanitize `body` for these content types. `null` = all.                   |
 | `skipRoutes`         | `(string \| RegExp)[]` | `[]`                                                        | Routes to ignore during auto-sanitization.                                    |
 | `recursive`          | `boolean`              | `true`                                                      | Whether to recursively sanitize nested objects/arrays.                        |
-| `maxDepth`           | `number \| null`       | `null`                                                      | Maximum recursion depth. `0` = top-level strings only. `null` = unlimited.    |
+| `maxDepth`           | `number \| null`       | `null`                                                      | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels). |
 | `maxDepthBehavior`   | `string`               | `'preserve'`                                                | Action when `maxDepth` exceeded. See [Depth Limiting](#depth-limiting).       |
 | `preserveEmails`     | `boolean`              | `true`                                                      | Preserve email-looking values. See [Email Preservation](#email-preservation). |
 | `allowPrototypeKeys` | `boolean`              | `false`                                                     | Allow `__proto__` / `constructor` / `prototype` keys.                         |
 | `allowedKeys`        | `string[]`             | `[]`                                                        | Key whitelist, applied at every depth. See [Allowing / Denying Specific Keys](#allowing--denying-specific-keys). |
 | `deniedKeys`         | `string[]`             | `[]`                                                        | Keys to completely remove from the input.                                     |
 | `removeEmpty`        | `boolean`              | `false`                                                     | Remove keys whose value is **falsy** after sanitization (`''`, `null`, `0`, `false`). |
-| `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Regex patterns to match. Override to add custom patterns.                     |
+| `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Non-empty array of `RegExp`s (flags are merged). Override to add custom patterns. |
 | `customSanitizer`    | `function \| null`     | `null`                                                      | Replace the built-in sanitizer with your own function.                        |
 | `mode`               | `'auto' \| 'manual'`   | `'auto'`                                                    | `'auto'` sanitizes on every request. `'manual'` exposes `req.sanitize()`.     |
 | `onSanitize`         | `function \| null`     | `null`                                                      | Audit callback. See [onSanitize Events](#onsanitize-events).                  |

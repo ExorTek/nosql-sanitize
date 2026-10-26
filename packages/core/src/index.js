@@ -37,6 +37,8 @@ const resolveOptions = (userOptions = {}) => {
   const opts = {
     ...DEFAULT_OPTIONS,
     ...userOptions,
+    // Copy so callers can't mutate the frozen defaults (or each other's options)
+    sanitizeObjects: [...(userOptions.sanitizeObjects || DEFAULT_OPTIONS.sanitizeObjects)],
     stringOptions: { ...DEFAULT_OPTIONS.stringOptions, ...(userOptions.stringOptions || {}) },
     arrayOptions: { ...DEFAULT_OPTIONS.arrayOptions, ...(userOptions.arrayOptions || {}) },
     debug: { ...DEFAULT_OPTIONS.debug, ...(userOptions.debug || {}) },
@@ -44,9 +46,16 @@ const resolveOptions = (userOptions = {}) => {
 
   helpers.validateOptions(opts);
 
-  // Pre-compile combined pattern (just once) for performance optimization during runtime
+  // Pre-compile combined pattern (just once) for performance optimization during runtime.
+  // Flags of all patterns are merged (sticky dropped, global forced) so e.g. /where/i keeps matching WHERE.
   const patterns = opts.patterns || PATTERNS;
-  opts._combinedPattern = new RegExp(patterns.map((p) => p.source).join('|'), 'g');
+  const flags = new Set(['g']);
+  for (const p of patterns) for (const f of p.flags) if (f !== 'y') flags.add(f);
+  try {
+    opts._combinedPattern = new RegExp(patterns.map((p) => p.source).join('|'), [...flags].join(''));
+  } catch (err) {
+    throw new NoSQLSanitizeError(`Invalid configuration: "patterns" (${err.message})`, 'type_error');
+  }
 
   // Parse skipRoutes: Separate exact string matches (converted to a Set for O(1) lookup)
   // and RegExp patterns (kept in an array) for faster evaluation later

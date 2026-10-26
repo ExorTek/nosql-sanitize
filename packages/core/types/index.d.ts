@@ -115,7 +115,8 @@ declare namespace noSQLSanitizeCore {
     /**
      * Maximum recursion depth for nested objects.
      * Strings are always sanitized regardless of depth.
-     * `0` sanitizes only top-level strings. `null` = unlimited.
+     * `0` sanitizes only top-level strings. `null` = no limit, but nesting past
+     * 256 levels throws a `max_depth` NoSQLSanitizeError instead of overflowing the stack.
      * @default null
      */
     maxDepth?: number | null;
@@ -138,7 +139,11 @@ declare namespace noSQLSanitizeCore {
      * @default false
      */
     allowPrototypeKeys?: boolean;
-    /** Regex patterns to match and replace. @default [/\$/g, /control chars/g] */
+    /**
+     * Regex patterns to match and replace. Must be a non-empty array of RegExps;
+     * they are combined into one regex with their flags merged (`g` forced, `y` dropped).
+     * @default [/\$/g, /control chars/g]
+     */
     patterns?: RegExp[];
     /**
      * Key whitelist (empty = allow all). Applied at **every depth**: any key not
