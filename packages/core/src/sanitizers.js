@@ -2,7 +2,7 @@
 
 const { isString, isArray, isPlainObject, isPrimitive, isDate, isEmail, log } = require('./helpers');
 const { NoSQLSanitizeError } = require('./errors');
-const { DANGEROUS_KEYS } = require('./constants');
+const { DANGEROUS_KEYS, HARD_MAX_DEPTH } = require('./constants');
 
 const REMOVE = Symbol('nosql-sanitize:remove');
 
@@ -282,6 +282,13 @@ const sanitizeValue = (value, options, isValue = false, depth = 0, path = '') =>
       default:
         return REMOVE;
     }
+  }
+
+  if (options.maxDepth === null && depth >= HARD_MAX_DEPTH) {
+    throw new NoSQLSanitizeError(
+      `Max sanitization depth (${HARD_MAX_DEPTH}) exceeded at "${path || '<root>'}"; set maxDepth to control this`,
+      'max_depth',
+    );
   }
 
   if (isArray(value)) return sanitizeArray(value, options, depth + 1, path);

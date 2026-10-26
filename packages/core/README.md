@@ -110,7 +110,7 @@ shouldSkipRoute('/login', opts.skipRoutes);    // → false
 | `contentTypes`            | `string[] \| null`                  | `[...]`             | Only sanitize `body` for these content types. `null` = all.                                                          |
 | `mode`                    | `'auto' \| 'manual'`                | `'auto'`            | Automatically sanitize or expose `req.sanitize()`.                                                                   |
 | `skipRoutes`              | `(string \| RegExp)[]`              | `[]`                | Routes to ignore during auto-sanitization.                                                                           |
-| `maxDepth`                | `number \| null`                    | `null`              | Maximum recursion depth. `0` = top-level strings only. `null` = unlimited.                                           |
+| `maxDepth`                | `number \| null`                    | `null`              | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels).       |
 | `maxDepthBehavior`        | `'preserve' \| 'remove' \| 'throw'` | `'preserve'`        | Action when `maxDepth` exceeded. `'remove'` is recommended (fail-closed).                                            |
 | `preserveEmails`          | `boolean`                           | `true`              | Preserve email-looking values. Also bypasses custom `patterns`; set `false` if custom patterns must apply to emails. |
 | `allowPrototypeKeys`      | `boolean`                           | `false`             | Allow `__proto__`, `constructor`, `prototype` keys through.                                                          |

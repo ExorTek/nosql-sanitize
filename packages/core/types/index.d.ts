@@ -107,7 +107,8 @@ declare namespace noSQLSanitizeCore {
     /**
      * Maximum recursion depth for nested objects.
      * Strings are always sanitized regardless of depth.
-     * `0` sanitizes only top-level strings. `null` = unlimited.
+     * `0` sanitizes only top-level strings. `null` = no limit, but nesting past
+     * 256 levels throws a `max_depth` NoSQLSanitizeError instead of overflowing the stack.
      * @default null
      */
     maxDepth?: number | null;

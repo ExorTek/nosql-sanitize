@@ -115,7 +115,7 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `contentTypes`       | `string[] \| null`     | `['application/json', 'application/x-www-form-urlencoded']` | Only sanitize `body` for these content types. `null` = all.                   |
 | `skipRoutes`         | `(string \| RegExp)[]` | `[]`                                                        | Routes to ignore during auto-sanitization.                                    |
 | `recursive`          | `boolean`              | `true`                                                      | Whether to recursively sanitize nested objects/arrays.                        |
-| `maxDepth`           | `number \| null`       | `null`                                                      | Maximum recursion depth. `0` = top-level strings only. `null` = unlimited.    |
+| `maxDepth`           | `number \| null`       | `null`                                                      | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels). |
 | `maxDepthBehavior`   | `string`               | `'preserve'`                                                | Action when `maxDepth` exceeded. See [Depth Limiting](#depth-limiting).       |
 | `preserveEmails`     | `boolean`              | `true`                                                      | Preserve email-looking values. See [Email Preservation](#email-preservation). |
 | `allowPrototypeKeys` | `boolean`              | `false`                                                     | Allow `__proto__` / `constructor` / `prototype` keys.                         |
