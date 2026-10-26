@@ -509,7 +509,7 @@ test('onSanitize — null means no callback', () => {
 test('handleRequest — skips body when content-type not in allowed list', () => {
   const o = opts({ sanitizeObjects: ['body', 'query'] });
   const req = {
-    headers: { 'content-type': 'multipart/form-data; boundary=---abc' },
+    headers: { 'content-type': 'text/plain; charset=utf-8' },
     body: { file: '$evil' },
     query: { role: '$admin' },
   };

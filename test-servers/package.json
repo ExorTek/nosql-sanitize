@@ -13,9 +13,12 @@
   "dependencies": {
     "@exortek/express-mongo-sanitize": "workspace:*",
     "@exortek/fastify-mongo-sanitize": "workspace:*",
+    "@fastify/multipart": "^9",
     "express4": "npm:express@4.22.2",
     "express5": "npm:express@5.2.1",
+    "fastify-multipart8": "npm:@fastify/multipart@^8",
     "fastify4": "npm:fastify@4.29.1",
-    "fastify5": "npm:fastify@5.9.0"
+    "fastify5": "npm:fastify@5.9.0",
+    "multer": "^2"
   }
 }

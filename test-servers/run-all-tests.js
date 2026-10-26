@@ -54,6 +54,14 @@ function waitForServer(port, retries = 30) {
   });
 }
 
+const MP_BOUNDARY = 'nosqlsanitizeboundary';
+const MP_BODY = [
+  `--${MP_BOUNDARY}\r\nContent-Disposition: form-data; name="user[$ne]"\r\n\r\nx\r\n`,
+  `--${MP_BOUNDARY}\r\nContent-Disposition: form-data; name="name"\r\n\r\n$admin\r\n`,
+  `--${MP_BOUNDARY}\r\nContent-Disposition: form-data; name="f"; filename="a.txt"\r\nContent-Type: text/plain\r\n\r\nhello$\r\n`,
+  `--${MP_BOUNDARY}--\r\n`,
+].join('');
+
 const TESTS = [
   {
     name: 'Basic $ stripping',
@@ -268,6 +276,40 @@ const TESTS = [
     rawBody: '$admin injection',
     assert: (r) => r.data.body === '$admin injection',
     skip: ['Fastify 4', 'Fastify 5'],
+  },
+  {
+    name: 'multipart/form-data fields sanitized, file untouched (Express)',
+    method: 'POST',
+    path: '/multipart/test',
+    contentType: `multipart/form-data; boundary=${MP_BOUNDARY}`,
+    rawBody: MP_BODY,
+    assert: (r) =>
+      r.data.body.user?.ne === 'x' &&
+      !('$ne' in r.data.body.user) &&
+      r.data.body.name === 'admin' &&
+      r.data.files === 1,
+    skip: ['Fastify 4', 'Fastify 5'],
+  },
+  {
+    name: 'multipart/form-data fields sanitized, file untouched (Fastify attachFieldsToBody)',
+    method: 'POST',
+    path: '/multipart/test',
+    contentType: `multipart/form-data; boundary=${MP_BOUNDARY}`,
+    rawBody: MP_BODY,
+    assert: (r) =>
+      r.data.body['user[ne]'] === 'x' &&
+      r.data.body.name === 'admin' &&
+      r.data.body.f === 'hello$' &&
+      r.data.circular === false,
+    skip: ['Express 4', 'Express 5'],
+  },
+  {
+    name: '+json body sanitized (application/vnd.api+json)',
+    method: 'POST',
+    path: '/plusjson/test',
+    contentType: 'application/vnd.api+json',
+    body: { password: { $ne: '' }, name: '$admin' },
+    assert: (r) => r.data.body.password?.ne === '' && r.data.body.name === 'admin',
   },
 ];
 

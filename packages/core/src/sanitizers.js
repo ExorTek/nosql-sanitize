@@ -5,6 +5,12 @@ const { NoSQLSanitizeError } = require('./errors');
 const { DANGEROUS_KEYS, HARD_MAX_DEPTH } = require('./constants');
 
 const REMOVE = Symbol('nosql-sanitize:remove');
+// Internal sentinel for a reference back to an object currently being sanitized.
+const CIRCULAR = Symbol('nosql-sanitize:circular');
+
+// Containers on the current recursion path. Sanitization is synchronous, so one
+// module-level stack is enough; entries are always popped on the way back up.
+const ancestors = [];
 
 const keyPath = (path, key) => (path ? `${path}.${key}` : `${key}`);
 
@@ -62,11 +68,11 @@ const sanitizeArray = (arr, options, depth, path = '') => {
     }
 
     const s = sanitizeValue(item, options, true, depth, auditing ? `${path}[${i}]` : '');
-    if (s === REMOVE) {
+    if (s === REMOVE || s === CIRCULAR) {
       if (auditing) {
         onSanitize({
           type: 'removed',
-          reason: 'maxDepth',
+          reason: s === CIRCULAR ? 'circular' : 'maxDepth',
           key: String(i),
           path: `${path}[${i}]`,
           originalValue: item,
@@ -217,11 +223,11 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       sanitizedValue = sanitizeValue(val, options, true, depth, auditing ? keyPath(path, sanitizedKey) : '');
     }
 
-    if (sanitizedValue === REMOVE) {
+    if (sanitizedValue === REMOVE || sanitizedValue === CIRCULAR) {
       if (auditing)
         onSanitize({
           type: 'removed',
-          reason: 'maxDepth',
+          reason: sanitizedValue === CIRCULAR ? 'circular' : 'maxDepth',
           key,
           sanitizedKey,
           path: keyPath(path, sanitizedKey),
@@ -301,9 +307,17 @@ const sanitizeValue = (value, options, isValue = false, depth = 0, path = '') =>
     );
   }
 
-  if (isArray(value)) return sanitizeArray(value, options, depth + 1, path);
-  if (isPlainObject(value)) return sanitizeObject(value, options, depth + 1, path);
-  return value;
+  const array = isArray(value);
+  if (!array && !isPlainObject(value)) return value;
+
+  // Cut cycles (e.g. @fastify/multipart field objects point back at the body)
+  if (ancestors.includes(value)) return CIRCULAR;
+  ancestors.push(value);
+  try {
+    return array ? sanitizeArray(value, options, depth + 1, path) : sanitizeObject(value, options, depth + 1, path);
+  } finally {
+    ancestors.pop();
+  }
 };
 
 module.exports = { sanitizeString, sanitizeArray, sanitizeObject, sanitizeValue, REMOVE };
