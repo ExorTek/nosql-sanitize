@@ -14,10 +14,11 @@ declare namespace noSQLSanitizeCore {
 
   export interface ArrayOptions {
     /**
-     * Remove **falsy** values from arrays (`null`, `undefined`, `0`, `''`, `false`),
-     * not only `null`. @default false
+     * Filter array items after sanitization. `true` / `'falsy'` remove every
+     * **falsy** item (`null`, `undefined`, `0`, `''`, `false`), not only `null`;
+     * `'nullish'` removes only `null` and `undefined`. @default false
      */
-    filterNull?: boolean;
+    filterNull?: boolean | 'falsy' | 'nullish';
     /** Remove duplicate values from arrays. @default false */
     distinct?: boolean;
   }
@@ -117,11 +118,13 @@ declare namespace noSQLSanitizeCore {
     /** Recursively sanitize nested objects/arrays. @default true */
     recursive?: boolean;
     /**
-     * Remove keys whose value is **falsy** after sanitization (`''`, `null`,
-     * `undefined`, `0`, `false`), and keys that sanitize to an empty string.
+     * Remove keys whose value is empty after sanitization, and keys that sanitize
+     * to an empty string. `true` / `'falsy'` remove every **falsy** value (`''`,
+     * `null`, `undefined`, `0`, `false`); `'empty'` keeps `0` and `false` and
+     * removes `''`, `null`, `undefined`, `{}` and `[]`.
      * @default false
      */
-    removeEmpty?: boolean;
+    removeEmpty?: boolean | 'falsy' | 'empty';
     /**
      * Maximum recursion depth for nested objects.
      * Strings are always sanitized regardless of depth.
@@ -213,7 +216,7 @@ declare namespace noSQLSanitizeCore {
     customSanitizer: ((data: any, options: ResolvedOptions) => any) | null;
     onSanitize: ((event: SanitizeEvent) => void) | null;
     recursive: boolean;
-    removeEmpty: boolean;
+    removeEmpty: boolean | 'falsy' | 'empty';
     maxDepth: number | null;
     maxDepthBehavior: MaxDepthBehavior;
     preserveEmails: boolean;
@@ -312,6 +315,8 @@ declare namespace noSQLSanitizeCore {
   export function isDate(value: any): value is Date;
   export function isFunction(value: any): value is Function;
   export function isObjectEmpty(obj: any): boolean;
+  /** `''`, `null`, `undefined`, `{}` or `[]` (what `removeEmpty: 'empty'` removes). */
+  export function isEmptyValue(val: any): boolean;
   export function isEmail(value: any): boolean;
 
   /**
