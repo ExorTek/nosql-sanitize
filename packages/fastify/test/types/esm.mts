@@ -12,3 +12,10 @@ app.patch('/admin', { config: { mongoSanitize: { allowedOperators: ['$set'] } } 
 
 // @ts-expect-error invalid hook
 app.register(mongoSanitize, { hook: 'onRequest' });
+
+app.register(mongoSanitize, { debug: { enabled: true, logger: 'request' } });
+app.register(mongoSanitize, { debug: { enabled: true, logger: app.log } });
+app.get('/logged', { config: { mongoSanitize: { debug: { logger: 'request' } } } }, async () => 'ok');
+
+// @ts-expect-error unknown logger name
+app.register(mongoSanitize, { debug: { logger: 'reply' } });

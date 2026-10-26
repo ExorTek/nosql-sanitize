@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
 import { FastifyPluginCallback, FastifyRequest } from 'fastify';
-import { SanitizeOptions, ResolvedOptions, SanitizeEvent } from '@exortek/nosql-sanitize-core';
+import { SanitizeOptions, ResolvedOptions, SanitizeEvent, DebugOptions, Logger } from '@exortek/nosql-sanitize-core';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -10,7 +10,7 @@ declare module 'fastify' {
      * Call to sanitize `request.body`, `request.params`, and/or `request.query`.
      * Optionally pass overrides for this specific call.
      */
-    sanitize?: (options?: fastifyMongoSanitize.SanitizeOptions) => void;
+    sanitize?: (options?: fastifyMongoSanitize.FastifyRouteSanitizeOptions) => void;
   }
 
   interface FastifyContextConfig {
@@ -18,21 +18,30 @@ declare module 'fastify' {
      * Route-level override (auto mode). `false` turns sanitization off for this route;
      * an options object is merged over the plugin options for this route.
      */
-    mongoSanitize?: boolean | fastifyMongoSanitize.SanitizeOptions;
+    mongoSanitize?: boolean | fastifyMongoSanitize.FastifyRouteSanitizeOptions;
   }
 }
 
 type FastifyMongoSanitize = FastifyPluginCallback<fastifyMongoSanitize.FastifyMongoSanitizeOptions>;
 
 declare namespace fastifyMongoSanitize {
-  export { SanitizeOptions, ResolvedOptions, SanitizeEvent };
+  export { SanitizeOptions, ResolvedOptions, SanitizeEvent, Logger };
+
+  export interface FastifyDebugOptions extends Omit<DebugOptions, 'logger'> {
+    /**
+     * Where log messages go. `'request'` logs through `request.log` (with the request id),
+     * and through `fastify.log` outside a request. `null` writes with `console.log`.
+     * @default null
+     */
+    logger?: Logger | 'request' | null;
+  }
 
   /**
    * Fastify-specific options (extends SanitizeOptions).
    * Default `sanitizeObjects`: `['body', 'params', 'query']`
    * (includes `params`, unlike Express).
    */
-  export interface FastifyMongoSanitizeOptions extends SanitizeOptions {
+  export interface FastifyMongoSanitizeOptions extends Omit<SanitizeOptions, 'debug'> {
     /**
      * Request fields to sanitize.
      * @default ['body', 'params', 'query']
@@ -44,7 +53,12 @@ declare namespace fastifyMongoSanitize {
      * @default 'preHandler'
      */
     hook?: 'preHandler' | 'preValidation';
+    /** Debug logging configuration. */
+    debug?: FastifyDebugOptions;
   }
+
+  /** Options for `config.mongoSanitize` and `request.sanitize()`. */
+  export type FastifyRouteSanitizeOptions = Omit<FastifyMongoSanitizeOptions, 'hook'>;
 
   /**
    * Fastify plugin for NoSQL injection prevention.
