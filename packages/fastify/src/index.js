@@ -1,7 +1,7 @@
 'use strict';
 
 const fp = require('fastify-plugin');
-const { resolveOptions, handleRequest, shouldSkipRoute, log } = require('@exortek/nosql-sanitize-core');
+const { resolveOptions, handleRequest, shouldSkipRoute, log, isPlainObject } = require('@exortek/nosql-sanitize-core');
 
 const fastifyMongoSanitize = (fastify, options, done) => {
   // Fastify parses params before hooks run, so they're sanitized by default here
@@ -21,7 +21,7 @@ const fastifyMongoSanitize = (fastify, options, done) => {
     // Options objects are treated as immutable: pass a new object to change them.
     const customCache = new WeakMap();
     const resolveCustom = (customOpts) => {
-      if (typeof customOpts !== 'object') return resolveOptions({ ...baseOptions, ...customOpts });
+      if (!isPlainObject(customOpts)) return resolveOptions({ ...baseOptions, ...customOpts });
       let resolved = customCache.get(customOpts);
       if (!resolved) {
         resolved = resolveOptions({ ...baseOptions, ...customOpts });

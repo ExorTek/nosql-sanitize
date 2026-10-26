@@ -7,6 +7,7 @@ const {
   sanitizeString,
   log,
   isString,
+  isPlainObject,
 } = require('@exortek/nosql-sanitize-core');
 
 /**
@@ -27,7 +28,7 @@ const expressMongoSanitize = (options = {}) => {
   // Options objects are treated as immutable: pass a new object to change them.
   const customCache = new WeakMap();
   const resolveCustom = (customOpts) => {
-    if (typeof customOpts !== 'object') return resolveOptions({ ...options, ...customOpts });
+    if (!isPlainObject(customOpts)) return resolveOptions({ ...options, ...customOpts });
     let resolved = customCache.get(customOpts);
     if (!resolved) {
       resolved = resolveOptions({ ...options, ...customOpts });
