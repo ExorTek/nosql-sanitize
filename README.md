@@ -328,6 +328,8 @@ app.get('/user/:username', (req, res) => {
 });
 ```
 
+> Adding `'params'` to `sanitizeObjects` has no effect in Express. App-level middleware runs before routing, so `req.params` is still empty at that point.
+
 ### Skipping Specific Routes
 
 ```js

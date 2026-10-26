@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license">
 </p>
 
-Express middleware for **NoSQL injection prevention**. It recursively sanitizes request `body`, `query`, and `params` to strip the MongoDB operator characters (`$`, control bytes) attackers use to bypass your query logic — with zero configuration, on both Express 4 and Express 5.
+Express middleware for **NoSQL injection prevention**. It recursively sanitizes request `body` and `query` (and route `params` via [`paramSanitizeHandler`](#route-parameter-sanitization)) to strip the MongoDB operator characters (`$`, control bytes) attackers use to bypass your query logic — with zero configuration, on both Express 4 and Express 5.
 
 ## Contents
 
