@@ -244,12 +244,19 @@ app.use(mongoSanitize({
 
 ### Content-Type Guard
 
-Only `application/json` and `application/x-www-form-urlencoded` request bodies are sanitized by default. This prevents corrupting binary uploads, multipart forms, or other non-JSON payloads. The `query` object is always sanitized.
+Only `application/json` and `application/x-www-form-urlencoded` request bodies are sanitized by default. The match is on the exact MIME type, and the `query` object is always sanitized.
+
+> **Warning**: bodies with any other content type are passed through **unsanitized**. That includes `multipart/form-data` and `+json` types such as `application/vnd.api+json` or `application/merge-patch+json`. Body parsers like multer/busboy turn multipart fields such as `user[$ne]=x` into `{ user: { $ne: 'x' } }`, so a multipart route is just as injectable as a JSON one. If you parse any of these types, add them to `contentTypes`. Sanitization only touches the parsed plain-object body, never file streams or buffers.
 
 ```js
-// Add GraphQL support
+// Also sanitize multipart forms and JSON:API bodies
 app.use(mongoSanitize({
-  contentTypes: ['application/json', 'application/graphql'],
+  contentTypes: [
+    'application/json',
+    'application/x-www-form-urlencoded',
+    'multipart/form-data',
+    'application/vnd.api+json',
+  ],
 }));
 
 // Sanitize all content types (use with caution)
@@ -332,6 +339,8 @@ app.use(mongoSanitize({
   ]
 }));
 ```
+
+Regex entries are tested against the whole cleaned path and are **not anchored automatically**, so `/health/` would also skip `/api/users/health`. Always anchor with `^` (and `$` where appropriate).
 
 ### Custom Sanitizer
 

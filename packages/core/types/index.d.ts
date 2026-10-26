@@ -82,8 +82,9 @@ declare namespace noSQLSanitizeCore {
     sanitizeObjects?: string[];
     /**
      * Only sanitize request body for these content types.
-     * Set to `null` to sanitize all content types.
-     * Query/params are always sanitized regardless.
+     * Set to `null` to sanitize all content types. Bodies with any other content
+     * type (e.g. `multipart/form-data`, `application/vnd.api+json`) pass through
+     * unsanitized. Query/params are always sanitized regardless.
      * @default ['application/json', 'application/x-www-form-urlencoded']
      */
     contentTypes?: string[] | null;

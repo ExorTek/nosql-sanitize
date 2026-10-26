@@ -107,9 +107,9 @@ shouldSkipRoute('/login', opts.skipRoutes);    // → false
 | `replaceWith`             | `string`                            | `''`                | String to replace matched patterns with.                                                                             |
 | `removeMatches`           | `boolean`                           | `false`             | If `true`, removes the entire key-value pair if a match is found.                                                    |
 | `sanitizeObjects`         | `string[]`                          | `['body', 'query']` | Fields on the request object to sanitize.                                                                            |
-| `contentTypes`            | `string[] \| null`                  | `[...]`             | Only sanitize `body` for these content types. `null` = all.                                                          |
+| `contentTypes`            | `string[] \| null`                  | `[...]`             | Only sanitize `body` for these exact MIME types (multipart and `+json` are not included). `null` = all.              |
 | `mode`                    | `'auto' \| 'manual'`                | `'auto'`            | Automatically sanitize or expose `req.sanitize()`.                                                                   |
-| `skipRoutes`              | `(string \| RegExp)[]`              | `[]`                | Routes to ignore during auto-sanitization.                                                                           |
+| `skipRoutes`              | `(string \| RegExp)[]`              | `[]`                | Routes to ignore during auto-sanitization. Regexes are not auto-anchored; use `^…$`.                                 |
 | `maxDepth`                | `number \| null`                    | `null`              | Maximum recursion depth. `0` = top-level strings only. `null` = unlimited.                                           |
 | `maxDepthBehavior`        | `'preserve' \| 'remove' \| 'throw'` | `'preserve'`        | Action when `maxDepth` exceeded. `'remove'` is recommended (fail-closed).                                            |
 | `preserveEmails`          | `boolean`                           | `true`              | Preserve email-looking values. Also bypasses custom `patterns`; set `false` if custom patterns must apply to emails. |
