@@ -59,7 +59,7 @@ const opts = resolveOptions({
 - Pre-compiles `patterns` into a single `_combinedPattern` regex for performance
 - Converts `skipRoutes` strings to cleaned paths in a `Set` (O(1) lookup)
 - Converts `contentTypes` to a lowercase `Set`
-- Converts `allowedKeys` / `deniedKeys` to `Set`s
+- Converts `allowedKeys` / `allowedOperators` / `deniedKeys` to `Set`s
 
 ### `handleRequest(request, options)`
 
@@ -102,33 +102,35 @@ shouldSkipRoute('/login', opts.skipRoutes);    // → false
 
 ## ⚙️ Configuration Options
 
-| Option                    | Type                                | Default             | Description                                                                                                          |
-|:--------------------------|:------------------------------------|:--------------------|:---------------------------------------------------------------------------------------------------------------------|
-| `replaceWith`             | `string`                            | `''`                | String to replace matched patterns with.                                                                             |
-| `removeMatches`           | `boolean`                           | `false`             | If `true`, removes the entire key-value pair if a match is found.                                                    |
-| `sanitizeObjects`         | `string[]`                          | `['body', 'query']` | Fields on the request object to sanitize.                                                                            |
+| Option                    | Type                                | Default             | Description                                                                                                           |
+|:--------------------------|:------------------------------------|:--------------------|:----------------------------------------------------------------------------------------------------------------------|
+| `replaceWith`             | `string`                            | `''`                | String to replace matched patterns with.                                                                              |
+| `removeMatches`           | `boolean`                           | `false`             | If `true`, removes the entire key-value pair if a match is found.                                                     |
+| `sanitizeObjects`         | `string[]`                          | `['body', 'query']` | Fields on the request object to sanitize.                                                                             |
 | `contentTypes`            | `string[] \| null`                  | `[...]`             | Only sanitize `body` for these MIME types (default: JSON, urlencoded, multipart; `+json` follows JSON). `null` = all. |
-| `mode`                    | `'auto' \| 'manual'`                | `'auto'`            | Automatically sanitize or expose `req.sanitize()`.                                                                   |
-| `skipRoutes`              | `(string \| RegExp)[]`              | `[]`                | Routes to ignore during auto-sanitization. Regexes are not auto-anchored; use `^…$`.                                 |
-| `maxDepth`                | `number \| null`                    | `null`              | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels).       |
-| `maxDepthBehavior`        | `'preserve' \| 'remove' \| 'throw'` | `'preserve'`        | Action when `maxDepth` exceeded. `'remove'` is recommended (fail-closed).                                            |
-| `preserveEmails`          | `boolean`                           | `true`              | Preserve email-looking values. Also bypasses custom `patterns`; set `false` if custom patterns must apply to emails. |
-| `allowPrototypeKeys`      | `boolean`                           | `false`             | Allow `__proto__`, `constructor`, `prototype` keys through.                                                          |
-| `recursive`               | `boolean`                           | `true`              | Whether to recursively sanitize nested objects/arrays.                                                               |
-| `removeEmpty`             | `boolean`                           | `false`             | Remove keys whose value is falsy after sanitization (`''`, `null`, `0`, `false`).                                    |
-| `patterns`                | `RegExp[]`                          | `[/\$/g, /[ --]/g]` | Non-empty array of `RegExp`s, combined into one regex (flags merged). Override to add custom patterns.               |
-| `customSanitizer`         | `function \| null`                  | `null`              | Replace the built-in sanitizer with your own function.                                                               |
-| `onSanitize`              | `function \| null`                  | `null`              | Audit callback. Fires for value changes, key renames, and removals.                                                  |
-| `allowedKeys`             | `string[]`                          | `[]`                | Key whitelist applied at every depth; unlisted keys are removed. Listed keys are still sanitized (`$` stripped).    |
-| `deniedKeys`              | `string[]`                          | `[]`                | Blacklist of keys to remove. With `preserveEmails: true`, a denied key with an email-looking value is kept.         |
-| `stringOptions.trim`      | `boolean`                           | `false`             | Trim whitespace from sanitized strings.                                                                              |
-| `stringOptions.lowercase` | `boolean`                           | `false`             | Convert sanitized strings to lowercase.                                                                              |
-| `stringOptions.maxLength` | `number \| null`                    | `null`              | Truncate string values (not keys) to this length.                                                                    |
-| `arrayOptions.filterNull` | `boolean`                           | `false`             | Remove falsy values (`null`, `undefined`, `0`, `''`, `false`) from arrays after sanitization.                        |
-| `arrayOptions.distinct`   | `boolean`                           | `false`             | Remove duplicate values from arrays after sanitization.                                                              |
-| `debug.enabled`           | `boolean`                           | `false`             | Enable detailed logging.                                                                                             |
-| `debug.level`             | `string`                            | `'info'`            | Log level: `'silent'`, `'error'`, `'warn'`, `'info'`, `'debug'`, `'trace'`.                                          |
-| `debug.logSkippedRoutes`  | `boolean`                           | `false`             | Log when routes are skipped.                                                                                         |
+| `mode`                    | `'auto' \| 'manual'`                | `'auto'`            | Automatically sanitize or expose `req.sanitize()`.                                                                    |
+| `skipRoutes`              | `(string \| RegExp)[]`              | `[]`                | Routes to ignore during auto-sanitization. Regexes are not auto-anchored; use `^…$`.                                  |
+| `maxDepth`                | `number \| null`                    | `null`              | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels).        |
+| `maxDepthBehavior`        | `'preserve' \| 'remove' \| 'throw'` | `'preserve'`        | Action when `maxDepth` exceeded. `'remove'` is recommended (fail-closed).                                             |
+| `preserveEmails`          | `boolean`                           | `true`              | Preserve email-looking values. Also bypasses custom `patterns`; set `false` if custom patterns must apply to emails.  |
+| `allowPrototypeKeys`      | `boolean`                           | `false`             | Allow `__proto__`, `constructor`, `prototype` keys through.                                                           |
+| `recursive`               | `boolean`                           | `true`              | Whether to recursively sanitize nested objects/arrays.                                                                |
+| `removeEmpty`             | `boolean`                           | `false`             | Remove keys whose value is falsy after sanitization (`''`, `null`, `0`, `false`).                                     |
+| `patterns`                | `RegExp[]`                          | `[/\$/g, /[ --]/g]` | Non-empty array of `RegExp`s, combined into one regex (flags merged). Override to add custom patterns.                |
+| `customSanitizer`         | `function \| null`                  | `null`              | Replace the built-in sanitizer with your own function.                                                                |
+| `onSanitize`              | `function \| null`                  | `null`              | Audit callback. Fires for value changes, key renames, and removals.                                                   |
+| `allowedKeys`             | `string[]`                          | `[]`                | Key whitelist applied at every depth; unlisted keys are removed. Listed keys are still sanitized (`$` stripped).      |
+| `deniedKeys`              | `string[]`                          | `[]`                | Blacklist of keys to remove. With `preserveEmails: true`, a denied key with an email-looking value is kept.           |
+| `allowedOperators`        | `string[]`                          | `[]`                | `$`-operators kept verbatim at every depth (exact match). Values under them are still sanitized.                      |
+| `dotKeys`                 | `'allow' \| 'replace' \| 'remove'`  | `'allow'`           | Keys containing `.`: keep, replace each `.` with `replaceWith`, or remove the pair.                                   |
+| `stringOptions.trim`      | `boolean`                           | `false`             | Trim whitespace from sanitized strings.                                                                               |
+| `stringOptions.lowercase` | `boolean`                           | `false`             | Convert sanitized strings to lowercase.                                                                               |
+| `stringOptions.maxLength` | `number \| null`                    | `null`              | Truncate string values (not keys) to this length.                                                                     |
+| `arrayOptions.filterNull` | `boolean`                           | `false`             | Remove falsy values (`null`, `undefined`, `0`, `''`, `false`) from arrays after sanitization.                         |
+| `arrayOptions.distinct`   | `boolean`                           | `false`             | Remove duplicate values from arrays after sanitization.                                                               |
+| `debug.enabled`           | `boolean`                           | `false`             | Enable detailed logging.                                                                                              |
+| `debug.level`             | `string`                            | `'info'`            | Log level: `'silent'`, `'error'`, `'warn'`, `'info'`, `'debug'`, `'trace'`.                                           |
+| `debug.logSkippedRoutes`  | `boolean`                           | `false`             | Log when routes are skipped.                                                                                          |
 
 ## 🔒 Security Defaults
 

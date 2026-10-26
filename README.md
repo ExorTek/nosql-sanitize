@@ -121,6 +121,8 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `allowPrototypeKeys` | `boolean`              | `false`                                                     | Allow `__proto__` / `constructor` / `prototype` keys.                         |
 | `allowedKeys`        | `string[]`             | `[]`                                                        | Key whitelist, applied at every depth. See [Allowing / Denying Specific Keys](#allowing--denying-specific-keys). |
 | `deniedKeys`         | `string[]`             | `[]`                                                        | Keys to completely remove from the input.                                     |
+| `allowedOperators`   | `string[]`             | `[]`                                                        | `$`-operators kept verbatim (e.g. `['$set']`). See [Allowing / Denying Specific Keys](#allowing--denying-specific-keys). |
+| `dotKeys`            | `string`               | `'allow'`                                                   | Keys containing `.`: `'allow'`, `'replace'` (with `replaceWith`) or `'remove'`. |
 | `removeEmpty`        | `boolean`              | `false`                                                     | Remove keys whose value is **falsy** after sanitization (`''`, `null`, `0`, `false`). |
 | `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Non-empty array of `RegExp`s (flags are merged). Override to add custom patterns. |
 | `customSanitizer`    | `function \| null`     | `null`                                                      | Replace the built-in sanitizer with your own function.                        |
@@ -172,7 +174,7 @@ app.use(mongoSanitize({
 | Field            | Description                                                                                                                   |
 |:-----------------|:------------------------------------------------------------------------------------------------------------------------------|
 | `type`           | `'value'`, `'key'`, `'both'`, or `'removed'`                                                                                  |
-| `reason`         | Only for `'removed'`: `'deniedKey'`, `'notAllowed'`, `'prototypePollution'`, `'removeMatches'`, `'removeEmpty'`, `'maxDepth'`, `'circular'` |
+| `reason`         | Only for `'removed'`: `'deniedKey'`, `'notAllowed'`, `'prototypePollution'`, `'dotKey'`, `'removeMatches'`, `'removeEmpty'`, `'maxDepth'`, `'circular'` |
 | `key`            | Original key (e.g., `'$gt'`)                                                                                                  |
 | `sanitizedKey`   | Key after sanitization (e.g., `'gt'`)                                                                                         |
 | `path`           | Full dotted path (e.g., `'body.user.$gt'`)                                                                                    |
@@ -273,11 +275,12 @@ The defaults favor backward compatibility. For production, we recommend:
 app.use(mongoSanitize({
   maxDepth: 32,               // bound recursion…
   maxDepthBehavior: 'remove', // …and drop over-depth data instead of passing it through raw
+  dotKeys: 'remove',          // drop keys like 'profile.isAdmin'
 }));
 ```
 
 - **Validate schemas as well.** This library strips operator characters; it does not check types. `{ "age": { "gt": 1 } }` survives sanitization as an object, so cast or validate (Joi, Zod, Fastify JSON schema, Mongoose casting, `sanitizeFilter`) before querying.
-- **Watch dotted keys.** Keys like `profile.isAdmin` are not modified. Never spread request bodies straight into `$set`.
+- **Watch dotted keys.** By default, keys like `profile.isAdmin` are not modified. Set `dotKeys: 'remove'` (or `'replace'`), and never spread request bodies straight into `$set`.
 - **Anchor `skipRoutes` regexes** (`/^\/health$/`, not `/health/`). Otherwise they match anywhere in the path.
 - **`deniedKeys` and emails**: with `preserveEmails: true` (default), a denied key whose value looks like an email is **kept**. Set `preserveEmails: false` if a denied key must always be dropped.
 
@@ -379,7 +382,9 @@ app.use(mongoSanitize({
 
 ### Allowing / Denying Specific Keys
 
-`allowedKeys` is a **whitelist**. When it's non-empty, any key not listed is removed **at every depth** of the payload. Listed keys are still sanitized like any other key, so `$` is stripped from them. It does **not** let MongoDB operators through.
+`allowedKeys` is a **whitelist**. When it's non-empty, any key not listed is removed **at every depth** of the payload. Listed keys are still sanitized like any other key, so `$` is stripped from them. It does **not** let MongoDB operators through; use `allowedOperators` for that.
+
+`allowedOperators` lists exact `$`-operators that are kept verbatim at every depth. They also pass the `allowedKeys` whitelist and are never dropped by `removeMatches`. Everything under them is still sanitized, and `deniedKeys` still removes them. Only use it on trusted routes (for example an admin update API), and never list operators that run JavaScript (`$where`, `$function`, `$accumulator`).
 
 ```js
 // Only these keys survive, at any nesting level
@@ -391,6 +396,12 @@ app.use(mongoSanitize({
 app.use(mongoSanitize({
   deniedKeys: ['password_hash', 'internal_id']
 }));
+
+// Keep $set, sanitize everything inside it
+app.use('/admin', mongoSanitize({
+  allowedOperators: ['$set']
+}));
+// { "$set": { "name": "$x" }, "$inc": { "n": 1 } } -> { "$set": { "name": "x" }, "inc": { "n": 1 } }
 ```
 
 ### Custom Replacement

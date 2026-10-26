@@ -95,8 +95,8 @@ reporting policy above.
 - **It does not validate types or shape.** After sanitization `{ "password": { "ne": null } }` is still an object. Use
   schema validation (JSON schema, Zod, Joi) and/or Mongoose casting / `sanitizeFilter` so only the expected types reach
   your queries.
-- **It does not modify dotted keys** (`{ "profile.isAdmin": true }`). Never spread untrusted objects into `$set` or
-  similar update operators.
+- **It does not modify dotted keys by default** (`{ "profile.isAdmin": true }`). Set `dotKeys: 'remove'` or
+  `'replace'`, and never spread untrusted objects into `$set` or similar update operators.
 - **It only sees what it is configured to see.** Body content types outside `contentTypes`, request fields outside
   `sanitizeObjects`, skipped routes, and data from other sources (headers, cookies, WebSocket messages, queues) are not
   touched.
