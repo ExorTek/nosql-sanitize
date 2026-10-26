@@ -1,7 +1,7 @@
 name: Release
 
 # Manual publish to npm. Bump versions beforehand through a normal
-# "chore: version packages" PR (yarn version:all → commit → PR → merge);
+# "chore: version packages" PR (yarn changeset:version → commit → PR → merge);
 # this workflow only tests and publishes whatever versions currently sit on
 # master. Trigger it from Actions → Release → "Run workflow", or
 # `gh workflow run release.yml`.

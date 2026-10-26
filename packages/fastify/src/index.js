@@ -1,13 +1,15 @@
 'use strict';
 
 const fp = require('fastify-plugin');
-const { resolveOptions, handleRequest, shouldSkipRoute, log } = require('@exortek/nosql-sanitize-core');
+const { resolveOptions, handleRequest, shouldSkipRoute, log, isPlainObject } = require('@exortek/nosql-sanitize-core');
 
 const fastifyMongoSanitize = (fastify, options, done) => {
-  const opts = resolveOptions({
+  // Fastify parses params before hooks run, so they're sanitized by default here
+  const baseOptions = {
     sanitizeObjects: ['body', 'params', 'query'],
     ...options,
-  });
+  };
+  const opts = resolveOptions(baseOptions);
 
   log(opts.debug, 'info', 'PLUGIN', 'Initializing nosql-sanitize plugin', {
     mode: opts.mode,
@@ -15,8 +17,21 @@ const fastifyMongoSanitize = (fastify, options, done) => {
   });
 
   if (opts.mode === 'manual') {
+    // request.sanitize(customOpts) runs per request, so resolve each options object only once.
+    // Options objects are treated as immutable: pass a new object to change them.
+    const customCache = new WeakMap();
+    const resolveCustom = (customOpts) => {
+      if (!isPlainObject(customOpts)) return resolveOptions({ ...baseOptions, ...customOpts });
+      let resolved = customCache.get(customOpts);
+      if (!resolved) {
+        resolved = resolveOptions({ ...baseOptions, ...customOpts });
+        customCache.set(customOpts, resolved);
+      }
+      return resolved;
+    };
+
     fastify.decorateRequest('sanitize', function (customOpts = {}) {
-      const finalOpts = Object.keys(customOpts).length ? resolveOptions({ ...options, ...customOpts }) : opts;
+      const finalOpts = Object.keys(customOpts).length ? resolveCustom(customOpts) : opts;
       handleRequest(this, finalOpts);
     });
   }
