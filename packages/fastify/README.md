@@ -21,6 +21,7 @@ Fastify plugin for **NoSQL injection prevention**. It recursively sanitizes requ
 - [Features](#-features)
   - [Per-route options](#per-route-options)
   - [Sanitizing before schema validation](#sanitizing-before-schema-validation)
+  - [Logging through `request.log`](#logging-through-requestlog)
   - [Manual mode](#manual-mode)
   - [Content-Type guard](#content-type-guard)
   - [TypeScript support](#typescript-support)
@@ -140,6 +141,18 @@ By default the plugin runs in `preHandler`, which is after Fastify validates the
 ```js
 fastify.register(mongoSanitize, { hook: 'preValidation' });
 ```
+
+### Logging through `request.log`
+
+With `debug.logger: 'request'`, debug output goes through each request's `request.log`, so it lands in your Fastify logger with the request id. Messages outside a request (plugin startup) go to `fastify.log`. It also works in a route's `config.mongoSanitize` and in manual mode.
+
+```js
+fastify.register(mongoSanitize, {
+  debug: { enabled: true, level: 'debug', logger: 'request' },
+});
+```
+
+`debug.level` filters first, then Fastify's logger level applies. Any other logger object (e.g. `fastify.log`, a pino instance) can be passed as `debug.logger` too.
 
 ### Manual Mode
 

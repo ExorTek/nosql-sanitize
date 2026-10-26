@@ -74,8 +74,21 @@ const safeStringify = (data) => {
   }
 };
 
+const LOGGER_METHODS = Object.freeze(['error', 'warn', 'info', 'debug', 'trace']);
+const isLogger = (value) => value != null && LOGGER_METHODS.every((method) => isFunction(value[method]));
+
 const log = (debugOpts, level, context, message, data = null) => {
   if (!debugOpts?.enabled || LOG_LEVELS[debugOpts.level || 'silent'] < LOG_LEVELS[level]) return;
+
+  // pino-style call (merging object first) so fields end up structured in JSON loggers
+  const { logger } = debugOpts;
+  if (logger) {
+    logger[level](
+      data === null ? { module: 'nosql-sanitize', context } : { module: 'nosql-sanitize', context, data },
+      message,
+    );
+    return;
+  }
 
   const color = LOG_COLORS[level] || '';
   const reset = LOG_COLORS.reset;
@@ -147,6 +160,7 @@ const nestedValidators = Object.freeze({
     logPatternMatches: isBoolean,
     logSanitizedValues: isBoolean,
     logSkippedRoutes: isBoolean,
+    logger: (v) => v === null || isLogger(v),
   },
 });
 
@@ -179,6 +193,7 @@ module.exports = {
   isObjectEmpty,
   isEmptyValue,
   isEmail,
+  isLogger,
   cleanUrl,
   extractMimeType,
   log,

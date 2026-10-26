@@ -149,6 +149,7 @@ shouldSkipRoute('/login', opts.skipRoutes);    // → false
 | `debug.logSkippedRoutes`   | `boolean`                           | `false`             | Log when routes are skipped.                                                                                          |
 | `debug.logPatternMatches`  | `boolean`                           | `false`             | Log when a pattern changes a string, without the value.                                                               |
 | `debug.logSanitizedValues` | `boolean`                           | `false`             | Log original and sanitized values. They may contain tokens or PII; keep off in production.                            |
+| `debug.logger`             | `object \| null`                    | `null`              | Logger with `error`/`warn`/`info`/`debug`/`trace` methods (pino, `fastify.log`, `console`). `null` writes with `console.log`. Fastify also accepts `'request'`. |
 
 ## 🔒 Security Defaults
 

@@ -13,13 +13,30 @@ const {
 // 'preValidation' sanitizes before schema validation, so the schema checks the sanitized data
 const HOOKS = Object.freeze(['preHandler', 'preValidation']);
 
+// debug.logger: 'request' logs through each request's request.log, and through fastify.log outside a request
+const REQUEST_LOGGER = 'request';
+
 const setup = (fastify, options) => {
   // Fastify parses params before hooks run, so they're sanitized by default here
   const baseOptions = {
     sanitizeObjects: ['body', 'params', 'query'],
     ...options,
   };
-  const opts = resolveOptions(baseOptions);
+
+  const requestLogged = new WeakSet();
+  const resolve = (raw) => {
+    if (raw.debug?.logger !== REQUEST_LOGGER) return resolveOptions(raw);
+    const resolved = resolveOptions({ ...raw, debug: { ...raw.debug, logger: fastify.log } });
+    requestLogged.add(resolved);
+    return resolved;
+  };
+  // Copies the options only when debug is on, so the default path allocates nothing
+  const forRequest = (resolved, request) =>
+    resolved.debug.enabled && requestLogged.has(resolved)
+      ? { ...resolved, debug: { ...resolved.debug, logger: request.log } }
+      : resolved;
+
+  const opts = resolve(baseOptions);
 
   log(opts.debug, 'info', 'PLUGIN', 'Initializing nosql-sanitize plugin', {
     mode: opts.mode,
@@ -31,10 +48,10 @@ const setup = (fastify, options) => {
     // Options objects are treated as immutable: pass a new object to change them.
     const customCache = new WeakMap();
     const resolveCustom = (customOpts) => {
-      if (!isPlainObject(customOpts)) return resolveOptions({ ...baseOptions, ...customOpts });
+      if (!isPlainObject(customOpts)) return resolve({ ...baseOptions, ...customOpts });
       let resolved = customCache.get(customOpts);
       if (!resolved) {
-        resolved = resolveOptions({ ...baseOptions, ...customOpts });
+        resolved = resolve({ ...baseOptions, ...customOpts });
         customCache.set(customOpts, resolved);
       }
       return resolved;
@@ -42,7 +59,7 @@ const setup = (fastify, options) => {
 
     fastify.decorateRequest('sanitize', function (customOpts = {}) {
       const finalOpts = Object.keys(customOpts).length ? resolveCustom(customOpts) : opts;
-      handleRequest(this, finalOpts);
+      handleRequest(this, forRequest(finalOpts, this));
     });
   }
 
@@ -58,7 +75,7 @@ const setup = (fastify, options) => {
       if (!isPlainObject(route)) {
         throw new NoSQLSanitizeError('Invalid configuration: "config.mongoSanitize"', 'type_error');
       }
-      return resolveOptions({ ...baseOptions, ...route });
+      return resolve({ ...baseOptions, ...route });
     };
 
     // Resolve at registration too, so a bad route config fails at startup instead of on a request
@@ -80,13 +97,13 @@ const setup = (fastify, options) => {
     };
 
     fastify.addHook(hook, (request, reply, done) => {
-      if (shouldSkipRoute(request.url, opts.skipRoutes, opts.debug)) {
+      if (shouldSkipRoute(request.url, opts.skipRoutes, forRequest(opts, request).debug)) {
         return done();
       }
       // onInjection: 'reject' and maxDepthBehavior: 'throw' throw; hand the error to Fastify
       try {
         const routeOpts = optionsFor(request);
-        if (routeOpts) handleRequest(request, routeOpts);
+        if (routeOpts) handleRequest(request, forRequest(routeOpts, request));
       } catch (err) {
         return done(err);
       }
