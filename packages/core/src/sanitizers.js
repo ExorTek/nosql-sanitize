@@ -284,4 +284,50 @@ const sanitizeValue = (value, options, isValue = false, depth = 0, path = '') =>
   }
 };
 
-module.exports = { sanitizeString, sanitizeArray, sanitizeObject, sanitizeValue, REMOVE };
+// Containers on the current detection path. Separate from `ancestors` so hasInjection can run
+// inside an onSanitize callback without disturbing the sanitization around it.
+const scanning = [];
+
+const stringMatches = (str, options) => {
+  if (options.preserveEmails && isEmail(str)) return false;
+  options._combinedPattern.lastIndex = 0;
+  return options._combinedPattern.test(str);
+};
+
+// True when sanitizing `value` would neutralize an injection: a key or string matching the
+// patterns, a prototype key, or a dotted key when dotKeys isn't 'allow'. Keys the configuration
+// drops (deniedKeys / allowedKeys) and allowed operators don't count. Scans every depth,
+// regardless of maxDepth and recursive.
+const containsInjection = (value, options, depth = 0) => {
+  if (isString(value)) return stringMatches(value, options);
+
+  const array = isArray(value);
+  if (!array && !isPlainObject(value)) return false;
+  if (depth >= HARD_MAX_DEPTH) {
+    throw new NoSQLSanitizeError(`Max sanitization depth (${HARD_MAX_DEPTH}) exceeded`, 'max_depth');
+  }
+  if (scanning.includes(value)) return false;
+
+  scanning.push(value);
+  try {
+    if (array) return value.some((item) => containsInjection(item, options, depth + 1));
+
+    const { deniedKeys, allowedKeys, allowedOperators, allowPrototypeKeys, dotKeys } = options;
+    for (const key of Object.keys(value)) {
+      if (deniedKeys.has(key)) continue;
+      const isOperator = allowedOperators.has(key);
+      if (!isOperator) {
+        if (allowedKeys.size && !allowedKeys.has(key)) continue;
+        if (stringMatches(key, options)) return true;
+        if (!allowPrototypeKeys && DANGEROUS_KEYS.has(key)) return true;
+        if (dotKeys !== 'allow' && key.includes('.')) return true;
+      }
+      if (containsInjection(value[key], options, depth + 1)) return true;
+    }
+    return false;
+  } finally {
+    scanning.pop();
+  }
+};
+
+module.exports = { sanitizeString, sanitizeArray, sanitizeObject, sanitizeValue, containsInjection, REMOVE };

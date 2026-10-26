@@ -2,7 +2,14 @@
 
 const { DEFAULT_OPTIONS, DANGEROUS_KEYS, PATTERNS, LOG_LEVELS, LOG_COLORS } = require('./constants');
 const { NoSQLSanitizeError } = require('./errors');
-const { sanitizeString, sanitizeArray, sanitizeObject, sanitizeValue, REMOVE } = require('./sanitizers');
+const {
+  sanitizeString,
+  sanitizeArray,
+  sanitizeObject,
+  sanitizeValue,
+  containsInjection,
+  REMOVE,
+} = require('./sanitizers');
 const helpers = require('./helpers');
 
 const NESTED_OPTIONS = Object.freeze(['stringOptions', 'arrayOptions', 'debug']);
@@ -283,8 +290,49 @@ const shouldSkipRoute = (requestPath, skipRoutes, debug) => {
   return false;
 };
 
+// sanitize() / hasInjection() take user options or resolved ones; user options are resolved
+// once per object. Options objects are treated as immutable.
+const resolvedCache = new WeakMap();
+let defaultResolved = null;
+const toResolved = (options) => {
+  if (options === undefined) return (defaultResolved ??= resolveOptions());
+  if (!helpers.isPlainObject(options)) return resolveOptions(options); // throws type_error
+  if (options._combinedPattern instanceof RegExp) return options;
+  let resolved = resolvedCache.get(options);
+  if (!resolved) {
+    resolved = resolveOptions(options);
+    resolvedCache.set(options, resolved);
+  }
+  return resolved;
+};
+
+/**
+ * Sanitizes any value outside a request (GraphQL args, WebSocket messages, queue payloads).
+ * Uses the built-in sanitizer (`customSanitizer` is ignored) and never mutates `value`.
+ *
+ * @param {*} value - The value to sanitize.
+ * @param {Object} [options] - User options or options from `resolveOptions()`.
+ * @returns {*} The sanitized copy. An empty object/array if the root itself is dropped.
+ */
+const sanitize = (value, options) => {
+  const sanitized = sanitizeValue(value, toResolved(options));
+  return sanitized === REMOVE ? (Array.isArray(value) ? [] : {}) : sanitized;
+};
+
+/**
+ * Reports whether sanitizing `value` would neutralize an injection, without changing it.
+ *
+ * @param {*} value - The value to check.
+ * @param {Object} [options] - User options or options from `resolveOptions()`.
+ * @returns {boolean} `true` if a key or string matches `patterns`, a prototype key is present,
+ * or a dotted key is present while `dotKeys` isn't `'allow'`.
+ */
+const hasInjection = (value, options) => containsInjection(value, toResolved(options));
+
 module.exports = {
   resolveOptions,
+  sanitize,
+  hasInjection,
   handleRequest,
   shouldSkipRoute,
   shouldSanitizeContentType,

@@ -416,6 +416,24 @@ app.use(mongoSanitize({
 // { "$gt": 5 } -> { "_gt": 5 }
 ```
 
+### Outside HTTP (GraphQL, WebSockets, queues)
+
+The core package exposes the sanitizer directly:
+
+```js
+const { sanitize, hasInjection } = require('@exortek/nosql-sanitize-core');
+
+const options = { maxDepth: 16, maxDepthBehavior: 'remove' }; // resolved once, reused
+
+socket.on('message', (raw) => {
+  const msg = JSON.parse(raw);
+  if (hasInjection(msg, options)) return socket.close(1008); // reject…
+  handle(sanitize(msg, options));                            // …or clean it
+});
+```
+
+`hasInjection` doesn't modify anything. See the [Core README](packages/core/README.md#sanitizevalue-options--hasinjectionvalue-options) for exactly what it reports.
+
 ## ⚡ Performance
 
 Benchmarked on Apple M4 Pro (14 cores), Node.js v24.x with `--expose-gc`:

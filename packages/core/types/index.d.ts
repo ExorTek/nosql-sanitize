@@ -240,6 +240,22 @@ declare namespace noSQLSanitizeCore {
   export function resolveOptions(options?: SanitizeOptions): ResolvedOptions;
 
   /**
+   * Sanitize any value outside a request (GraphQL args, WebSocket messages, queue
+   * payloads). Uses the built-in sanitizer (`customSanitizer` is ignored) and never
+   * mutates `value`. User options are resolved once per object; don't mutate them.
+   * Returns an empty object/array if the root itself is dropped.
+   */
+  export function sanitize<T = any>(value: T, options?: SanitizeOptions | ResolvedOptions): T;
+
+  /**
+   * Whether sanitizing `value` would neutralize an injection: a key or string matching
+   * `patterns`, a prototype key, or a dotted key while `dotKeys` isn't `'allow'`.
+   * Keys dropped by `deniedKeys` / `allowedKeys` and `allowedOperators` don't count.
+   * Scans every depth, regardless of `maxDepth` and `recursive`. Never mutates `value`.
+   */
+  export function hasInjection(value: any, options?: SanitizeOptions | ResolvedOptions): boolean;
+
+  /**
    * Sanitize a request object's body, query, and/or params in-place.
    * Respects content-type guards and Express 5 non-writable properties.
    */
