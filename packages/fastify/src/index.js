@@ -10,11 +10,15 @@ const {
   NoSQLSanitizeError,
 } = require('@exortek/nosql-sanitize-core');
 
-// 'preValidation' sanitizes before schema validation, so the schema checks the sanitized data
+// 'preValidation' (default) sanitizes before schema validation, so the schema checks the sanitized data
 const HOOKS = Object.freeze(['preHandler', 'preValidation']);
 
-// debug.logger: 'request' logs through each request's request.log, and through fastify.log outside a request
+// debug.logger: 'request' (default) logs through each request's request.log, and through fastify.log
+// outside a request. A logger object or null (console.log) opts out.
 const REQUEST_LOGGER = 'request';
+
+// Without the `logger` option Fastify installs a no-op logger, which (unlike pino) has no level
+const hasLogger = (fastify) => fastify.log.level !== undefined;
 
 const setup = (fastify, options) => {
   // Fastify parses params before hooks run, so they're sanitized by default here
@@ -25,8 +29,17 @@ const setup = (fastify, options) => {
 
   const requestLogged = new WeakSet();
   const resolve = (raw) => {
-    if (raw.debug?.logger !== REQUEST_LOGGER) return resolveOptions(raw);
-    const resolved = resolveOptions({ ...raw, debug: { ...raw.debug, logger: fastify.log } });
+    const debug = raw.debug === undefined ? {} : raw.debug;
+    // Anything else (including an invalid debug option) is left to resolveOptions.
+    // The default falls back to console.log when Fastify's logger is off, so debug output isn't swallowed.
+    if (
+      !isPlainObject(debug) ||
+      (debug.logger !== undefined && debug.logger !== REQUEST_LOGGER) ||
+      (debug.logger === undefined && !hasLogger(fastify))
+    ) {
+      return resolveOptions(raw);
+    }
+    const resolved = resolveOptions({ ...raw, debug: { ...debug, logger: fastify.log } });
     requestLogged.add(resolved);
     return resolved;
   };
@@ -63,7 +76,7 @@ const setup = (fastify, options) => {
     });
   }
 
-  const hook = options.hook === undefined ? 'preHandler' : options.hook;
+  const hook = options.hook === undefined ? 'preValidation' : options.hook;
   if (!HOOKS.includes(hook)) throw new NoSQLSanitizeError('Invalid configuration: "hook"', 'type_error');
 
   if (opts.mode === 'auto') {

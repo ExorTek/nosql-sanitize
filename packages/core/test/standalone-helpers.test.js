@@ -71,7 +71,7 @@ test('hasInjection exempts emails with preserveEmails, like the sanitizer', () =
   const patterns = [/example/];
   assert.strictEqual(hasInjection({ email: 'ada@example.com' }, { patterns }), false);
   assert.strictEqual(hasInjection({ email: 'ada@example.com' }, { patterns, preserveEmails: false }), true);
-  assert.strictEqual(hasInjection({ 'ada@example.com': 1 }, { patterns }), false);
+  assert.strictEqual(hasInjection({ 'ada@example.com': 1 }, { patterns, dotKeys: 'allow' }), false);
 });
 
 test('hasInjection ignores allowed operators but checks their contents', () => {
@@ -86,7 +86,8 @@ test('hasInjection skips keys the sanitizer drops by configuration', () => {
 });
 
 test('hasInjection flags dotted keys only when dotKeys is not allow', () => {
-  assert.strictEqual(hasInjection({ 'profile.isAdmin': true }), false);
+  assert.strictEqual(hasInjection({ 'profile.isAdmin': true }, { dotKeys: 'allow' }), false);
+  assert.strictEqual(hasInjection({ 'profile.isAdmin': true }), true);
   assert.strictEqual(hasInjection({ 'profile.isAdmin': true }, { dotKeys: 'remove' }), true);
   assert.strictEqual(hasInjection({ 'profile.isAdmin': true }, { dotKeys: 'replace' }), true);
 });

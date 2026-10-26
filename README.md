@@ -9,6 +9,8 @@
 
 `nosql-sanitize` is a lightweight and blazing-fast suite of tools designed to prevent **NoSQL Injection** attacks in Node.js applications. It recursively sanitizes user-supplied data to remove characters and patterns (like `$` and control characters) used in malicious MongoDB queries.
 
+> **Upgrading from v3?** v4 switches to fail-closed defaults. See the [migration guide](./MIGRATION-v4.md).
+
 ### Key Features
 
 - **Blazing Fast**: Optimized core engine with pre-compiled regex and minimal overhead.
@@ -51,7 +53,7 @@ Every framework major below is exercised by the integration test suite (`yarn te
 | -------------- | --------------- | ---------------------------------- |
 | **Express**    | `4.x` and `5.x` | ✅ Express 4 + Express 5 servers    |
 | **Fastify**    | `4.x` and `5.x` | ✅ Fastify 4 + Fastify 5 servers    |
-| **Node.js**    | `>= 18`         | ✅                                  |
+| **Node.js**    | `>= 20`         | ✅                                  |
 | **Modules**    | CommonJS + ESM  | `require()` and `import` both work |
 | **TypeScript** | Bundled `.d.ts` | No `@types/*` needed               |
 
@@ -115,15 +117,15 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `contentTypes`       | `string[] \| null`     | `['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']` | Only sanitize `body` for these content types (`+json` types follow `application/json`). `null` = all. |
 | `skipRoutes`         | `(string \| RegExp)[]` | `[]`                                                        | Routes to ignore during auto-sanitization.                                    |
 | `recursive`          | `boolean`              | `true`                                                      | Whether to recursively sanitize nested objects/arrays.                        |
-| `maxDepth`           | `number \| null`       | `null`                                                      | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels). |
-| `maxDepthBehavior`   | `string`               | `'preserve'`                                                | Action when `maxDepth` exceeded. See [Depth Limiting](#depth-limiting).       |
+| `maxDepth`           | `number \| null`       | `32`                                                        | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels). |
+| `maxDepthBehavior`   | `string`               | `'remove'`                                                  | Action when `maxDepth` exceeded. See [Depth Limiting](#depth-limiting).       |
 | `preserveEmails`     | `boolean`              | `true`                                                      | Preserve email-looking values. See [Email Preservation](#email-preservation). |
 | `allowPrototypeKeys` | `boolean`              | `false`                                                     | Allow `__proto__` / `constructor` / `prototype` keys.                         |
 | `allowedKeys`        | `string[]`             | `[]`                                                        | Key whitelist, applied at every depth. See [Allowing / Denying Specific Keys](#allowing--denying-specific-keys). |
-| `deniedKeys`         | `string[]`             | `[]`                                                        | Keys to completely remove from the input.                                     |
+| `deniedKeys`         | `string[]`             | `[]`                                                        | Keys to completely remove from the input, whatever their value.               |
 | `allowedOperators`   | `string[]`             | `[]`                                                        | `$`-operators kept verbatim (e.g. `['$set']`). See [Allowing / Denying Specific Keys](#allowing--denying-specific-keys). |
-| `dotKeys`            | `string`               | `'allow'`                                                   | Keys containing `.`: `'allow'`, `'replace'` (with `replaceWith`) or `'remove'`. |
-| `removeEmpty`        | `boolean \| 'falsy' \| 'empty'` | `false`                                           | `true` / `'falsy'`: remove keys whose value is **falsy** after sanitization (`''`, `null`, `0`, `false`). `'empty'`: keep `0` / `false`, remove `''`, `null`, `{}`, `[]`. |
+| `dotKeys`            | `string`               | `'replace'`                                                 | Keys containing `.`: `'allow'`, `'replace'` (with `replaceWith`) or `'remove'`. |
+| `removeEmpty`        | `boolean \| 'falsy' \| 'empty'` | `false`                                           | `true` / `'empty'`: remove keys whose value is `''`, `null`, `undefined`, `{}` or `[]` after sanitization (`0` / `false` are kept). `'falsy'`: remove every **falsy** value. |
 | `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Non-empty array of `RegExp`s (flags are merged). Override to add custom patterns. |
 | `customSanitizer`    | `function \| null`     | `null`                                                      | Replace the built-in sanitizer with your own function.                        |
 | `mode`               | `'auto' \| 'manual'`   | `'auto'`                                                    | `'auto'` sanitizes on every request. `'manual'` exposes `req.sanitize()`.     |
@@ -152,8 +154,8 @@ Control how arrays are post-processed after sanitization:
 ```js
 app.use(mongoSanitize({
   arrayOptions: {
-    filterNull: true,    // Remove falsy values (null, undefined, 0, '', false) from arrays;
-                         // use 'nullish' to remove only null and undefined
+    filterNull: true,    // Remove null and undefined from arrays (same as 'nullish');
+                         // use 'falsy' to also remove 0, '' and false
     distinct: true,      // Remove duplicate values from arrays
   }
 }));
@@ -214,19 +216,20 @@ The `maxDepthBehavior` option controls what happens when a value exceeds the dep
 
 | Behavior                     | Description                                       | Risk                                                                                                            |
 |:-----------------------------|:--------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| `'preserve'` (default)       | Pass through the over-depth value **unsanitized** | **Unsafe** — injection vectors in deep nesting bypass sanitization. Default for v2 backward compatibility only. |
-| `'remove'` (**recommended**) | Drop the over-depth value entirely                | **Safe** — fail-closed. Over-depth data is discarded.                                                           |
+| `'preserve'`                 | Pass through the over-depth value **unsanitized** | **Unsafe** — injection vectors in deep nesting bypass sanitization. The v3 default.                            |
+| `'remove'` (default)         | Drop the over-depth value entirely                | **Safe** — fail-closed. Over-depth data is discarded.                                                           |
 | `'throw'`                    | Throw a `NoSQLSanitizeError`                      | **Safe** — rejects the entire request. Use with error handling middleware.                                      |
 
-> **Warning**: `maxDepthBehavior: 'preserve'` is the default for backward compatibility, but it is **not secure**. An attacker can place injection operators deeper than `maxDepth` and they will pass through unsanitized.
+The defaults are `maxDepth: 32` and `maxDepthBehavior: 'remove'`: data nested deeper than 32 levels is dropped. Lower the limit if your payloads are shallow, or reject such requests outright:
 
 ```js
-// Recommended production configuration
 app.use(mongoSanitize({
-  maxDepth: 5,
-  maxDepthBehavior: 'remove',
+  maxDepth: 8,
+  maxDepthBehavior: 'throw',
 }));
 ```
+
+> **Warning**: `maxDepthBehavior: 'preserve'` is **not secure**. An attacker can place injection operators deeper than `maxDepth` and they will pass through unsanitized.
 
 Setting `maxDepth: 0` is valid and means "only sanitize top-level string values" — nested objects/arrays are handled per `maxDepthBehavior`.
 
@@ -236,7 +239,7 @@ By default, values that look like email addresses (e.g., `user@example.com`) are
 
 > **Important**: When `preserveEmails: true`, the email bypass also skips any custom `patterns` you provide. If you add custom patterns that must apply to email values, set `preserveEmails: false`.
 >
-> It also takes precedence over `deniedKeys`: a denied key whose value looks like an email is kept. Set `preserveEmails: false` if denied keys must always be removed.
+> It only applies to values. `deniedKeys` always win, and email-looking *keys* still get their dots replaced (see `dotKeys`).
 
 ```js
 // Custom patterns that must also apply to emails
@@ -271,20 +274,19 @@ app.use(mongoSanitize({ contentTypes: null }));
 
 ### Production Hardening
 
-The defaults favor backward compatibility. For production, we recommend:
+The defaults are fail-closed: over-depth data is dropped (`maxDepth: 32`, `maxDepthBehavior: 'remove'`) and dotted keys are neutralized (`dotKeys: 'replace'`). On top of that, you can:
 
 ```js
 app.use(mongoSanitize({
-  maxDepth: 32,               // bound recursion…
-  maxDepthBehavior: 'remove', // …and drop over-depth data instead of passing it through raw
-  dotKeys: 'remove',          // drop keys like 'profile.isAdmin'
+  maxDepth: 8,                // bound recursion to what your payloads need…
+  maxDepthBehavior: 'throw',  // …and reject anything deeper
+  dotKeys: 'remove',          // drop keys like 'profile.isAdmin' instead of renaming them
 }));
 ```
 
 - **Validate schemas as well.** This library strips operator characters; it does not check types. `{ "age": { "gt": 1 } }` survives sanitization as an object, so cast or validate (Joi, Zod, Fastify JSON schema, Mongoose casting, `sanitizeFilter`) before querying.
-- **Watch dotted keys.** By default, keys like `profile.isAdmin` are not modified. Set `dotKeys: 'remove'` (or `'replace'`), and never spread request bodies straight into `$set`.
+- **Watch dotted keys.** By default, keys like `profile.isAdmin` become `profileisAdmin` (`dotKeys: 'replace'`). Still, never spread request bodies straight into `$set`.
 - **Anchor `skipRoutes` regexes** (`/^\/health$/`, not `/health/`). Otherwise they match anywhere in the path.
-- **`deniedKeys` and emails**: with `preserveEmails: true` (default), a denied key whose value looks like an email is **kept**. Set `preserveEmails: false` if a denied key must always be dropped.
 
 ### Custom Patterns
 
@@ -334,7 +336,7 @@ app.use(mongoSanitize({
 
 ### Debug Logging
 
-Debug output goes to `console.log` unless you pass a logger. Any object with `error`, `warn`, `info`, `debug` and `trace` methods works (pino, `fastify.log`, `console`). It is called pino-style: `logger.debug({ module: 'nosql-sanitize', context, data }, message)`.
+Debug output goes to `console.log` (Express) or `request.log` (Fastify) unless you pass a logger. Any object with `error`, `warn`, `info`, `debug` and `trace` methods works (pino, `fastify.log`, `console`). It is called pino-style: `logger.debug({ module: 'nosql-sanitize', context, data }, message)`.
 
 ```js
 const pino = require('pino');
@@ -343,8 +345,8 @@ app.use(mongoSanitize({
   debug: { enabled: true, level: 'debug', logger: pino({ level: 'debug' }) },
 }));
 
-// Fastify: log through request.log, so each line carries the request id
-fastify.register(mongoSanitize, { debug: { enabled: true, level: 'debug', logger: 'request' } });
+// Fastify logs through request.log by default, so each line carries the request id
+fastify.register(mongoSanitize, { debug: { enabled: true, level: 'debug' } });
 ```
 
 `debug.level` filters first, then the logger's own level applies, so set both. Sanitized values are still only logged with `logSanitizedValues: true`.

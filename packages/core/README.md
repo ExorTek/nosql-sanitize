@@ -125,31 +125,31 @@ shouldSkipRoute('/login', opts.skipRoutes);    // → false
 | `contentTypes`             | `string[] \| null`                  | `[...]`             | Only sanitize `body` for these MIME types (default: JSON, urlencoded, multipart; `+json` follows JSON). `null` = all. |
 | `mode`                     | `'auto' \| 'manual'`                | `'auto'`            | Automatically sanitize or expose `req.sanitize()`.                                                                    |
 | `skipRoutes`               | `(string \| RegExp)[]`              | `[]`                | Routes to ignore during auto-sanitization. Regexes are not auto-anchored; use `^…$`.                                  |
-| `maxDepth`                 | `number \| null`                    | `null`              | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels).        |
-| `maxDepthBehavior`         | `'preserve' \| 'remove' \| 'throw'` | `'preserve'`        | Action when `maxDepth` exceeded. `'remove'` is recommended (fail-closed).                                             |
+| `maxDepth`                 | `number \| null`                    | `32`                | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels).        |
+| `maxDepthBehavior`         | `'preserve' \| 'remove' \| 'throw'` | `'remove'`          | Action when `maxDepth` exceeded. `'remove'` and `'throw'` are fail-closed; `'preserve'` passes the value through raw. |
 | `preserveEmails`           | `boolean`                           | `true`              | Preserve email-looking values. Also bypasses custom `patterns`; set `false` if custom patterns must apply to emails.  |
 | `allowPrototypeKeys`       | `boolean`                           | `false`             | Allow `__proto__`, `constructor`, `prototype` keys through.                                                           |
 | `recursive`                | `boolean`                           | `true`              | Whether to recursively sanitize nested objects/arrays.                                                                |
-| `removeEmpty`              | `boolean \| 'falsy' \| 'empty'`     | `false`             | `true` / `'falsy'`: remove keys whose value is falsy after sanitization (`''`, `null`, `0`, `false`). `'empty'`: keep `0` / `false`, remove `''`, `null`, `{}`, `[]`. |
+| `removeEmpty`              | `boolean \| 'falsy' \| 'empty'`     | `false`             | `true` / `'empty'`: remove keys whose value is `''`, `null`, `undefined`, `{}` or `[]` after sanitization. `'falsy'`: also `0` / `false`. |
 | `patterns`                 | `RegExp[]`                          | `[/\$/g, /[ --]/g]` | Non-empty array of `RegExp`s, combined into one regex (flags merged). Override to add custom patterns.                |
 | `customSanitizer`          | `function \| null`                  | `null`              | Replace the built-in sanitizer with your own function.                                                                |
 | `onSanitize`               | `function \| null`                  | `null`              | Audit callback. Fires for value changes, key renames, and removals.                                                   |
 | `onInjection`              | `'sanitize' \| 'reject' \| 'report'` | `'sanitize'`        | `'reject'` throws `injection_detected` (`statusCode` 400); `'report'` only emits `onSanitize` events (required) and leaves the request untouched. |
 | `allowedKeys`              | `string[]`                          | `[]`                | Key whitelist applied at every depth; unlisted keys are removed. Listed keys are still sanitized (`$` stripped).      |
-| `deniedKeys`               | `string[]`                          | `[]`                | Blacklist of keys to remove. With `preserveEmails: true`, a denied key with an email-looking value is kept.           |
+| `deniedKeys`               | `string[]`                          | `[]`                | Blacklist of keys to remove, whatever their value.                                                                    |
 | `allowedOperators`         | `string[]`                          | `[]`                | `$`-operators kept verbatim at every depth (exact match). Values under them are still sanitized.                      |
-| `dotKeys`                  | `'allow' \| 'replace' \| 'remove'`  | `'allow'`           | Keys containing `.`: keep, replace each `.` with `replaceWith`, or remove the pair.                                   |
+| `dotKeys`                  | `'allow' \| 'replace' \| 'remove'`  | `'replace'`         | Keys containing `.`: keep, replace each `.` with `replaceWith`, or remove the pair.                                   |
 | `stringOptions.trim`       | `boolean`                           | `false`             | Trim whitespace from string values (not keys).                                                                        |
 | `stringOptions.lowercase`  | `boolean`                           | `false`             | Convert string values (not keys) to lowercase.                                                                        |
 | `stringOptions.maxLength`  | `number \| null`                    | `null`              | Truncate string values (not keys) to this length. Must be a positive integer.                                         |
-| `arrayOptions.filterNull`  | `boolean \| 'falsy' \| 'nullish'`   | `false`             | `true` / `'falsy'`: remove falsy values (`null`, `undefined`, `0`, `''`, `false`) from arrays. `'nullish'`: only `null` / `undefined`. |
+| `arrayOptions.filterNull`  | `boolean \| 'falsy' \| 'nullish'`   | `false`             | `true` / `'nullish'`: remove `null` / `undefined` from arrays. `'falsy'`: also `0`, `''`, `false`. |
 | `arrayOptions.distinct`    | `boolean`                           | `false`             | Remove duplicate values from arrays after sanitization.                                                               |
 | `debug.enabled`            | `boolean`                           | `false`             | Enable detailed logging.                                                                                              |
 | `debug.level`              | `string`                            | `'info'`            | Log level: `'silent'`, `'error'`, `'warn'`, `'info'`, `'debug'`, `'trace'`.                                           |
 | `debug.logSkippedRoutes`   | `boolean`                           | `false`             | Log when routes are skipped.                                                                                          |
 | `debug.logPatternMatches`  | `boolean`                           | `false`             | Log when a pattern changes a string, without the value.                                                               |
 | `debug.logSanitizedValues` | `boolean`                           | `false`             | Log original and sanitized values. They may contain tokens or PII; keep off in production.                            |
-| `debug.logger`             | `object \| null`                    | `null`              | Logger with `error`/`warn`/`info`/`debug`/`trace` methods (pino, `fastify.log`, `console`). `null` writes with `console.log`. Fastify also accepts `'request'`. |
+| `debug.logger`             | `object \| null`                    | `null`              | Logger with `error`/`warn`/`info`/`debug`/`trace` methods (pino, `fastify.log`, `console`). `null` writes with `console.log`. Fastify also accepts `'request'` (its default). |
 
 ## 🔒 Security Defaults
 
@@ -163,11 +163,11 @@ Opt out with `allowPrototypeKeys: true` only if you fully trust the input.
 
 | Behavior                     | Description                | Security                                           |
 |:-----------------------------|:---------------------------|:---------------------------------------------------|
-| `'preserve'` (default)       | Pass through unsanitized   | **Unsafe** — injection vectors bypass sanitization |
-| `'remove'` (**recommended**) | Drop the value             | **Safe** — fail-closed                             |
+| `'preserve'`                 | Pass through unsanitized   | **Unsafe** — injection vectors bypass sanitization |
+| `'remove'` (default)         | Drop the value             | **Safe** — fail-closed                             |
 | `'throw'`                    | Throw `NoSQLSanitizeError` | **Safe** — rejects the request                     |
 
-> `'preserve'` is the default for backward compatibility only. Always use `'remove'` or `'throw'` in production.
+> `'preserve'` was the default in v3. Avoid it in production.
 
 ## 🔍 Default Patterns
 

@@ -69,9 +69,9 @@ for (const [name, factory] of versions) {
     },
   };
 
-  test(`[${name}] default hook validates the raw body (preHandler)`, async () => {
+  test(`[${name}] hook: 'preHandler' validates the raw body`, async () => {
     const fastify = factory();
-    fastify.register(plugin);
+    fastify.register(plugin, { hook: 'preHandler' });
     fastify.post('/t', { schema }, async (request) => request.body);
     assert.strictEqual((await post(fastify, '/t', { name: '$abc' })).statusCode, 400);
     await fastify.close();

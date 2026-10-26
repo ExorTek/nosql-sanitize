@@ -18,8 +18,8 @@ test('options set to undefined fall back to their defaults', () => {
   assert.strictEqual(r.recursive, true);
   assert.strictEqual(r.preserveEmails, true);
   assert.strictEqual(r.maxDepthBehavior, DEFAULT_OPTIONS.maxDepthBehavior);
-  assert.strictEqual(r.dotKeys, 'allow');
-  assert.strictEqual(r.maxDepth, null);
+  assert.strictEqual(r.dotKeys, DEFAULT_OPTIONS.dotKeys);
+  assert.strictEqual(r.maxDepth, DEFAULT_OPTIONS.maxDepth);
   assert.strictEqual(r.onSanitize, null);
 });
 

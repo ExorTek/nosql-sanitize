@@ -129,8 +129,8 @@ test('sanitizeString — strips control characters', () => {
   assert.strictEqual(sanitizeString('test\x1Fdata', o, true), 'testdata');
 });
 
-test('sanitizeArray — filterNull removes falsy', () => {
-  const o = opts({ arrayOptions: { filterNull: true } });
+test("sanitizeArray — filterNull: 'falsy' removes falsy", () => {
+  const o = opts({ arrayOptions: { filterNull: 'falsy' } });
   const result = sanitizeArray(['a', null, '', 0, false, 'b'], o);
   assert.deepStrictEqual(result, ['a', 'b']);
 });
@@ -173,14 +173,14 @@ test('sanitizeObject — deniedKeys filters', () => {
     { username: '$admin', email: 'test@example.com', password: '$secret', role: '$super' },
     o,
   );
-  // email value is an email → preserved even though key is denied
-  assert.deepStrictEqual(result, { username: 'admin', email: 'test@example.com', role: 'super' });
+  // denied keys go even when the value looks like an email
+  assert.deepStrictEqual(result, { username: 'admin', role: 'super' });
 });
 
-test('sanitizeObject — BUG-03 fix: deniedKey with email value preserved', () => {
+test('sanitizeObject — deniedKey with email value is removed', () => {
   const o = opts({ deniedKeys: ['contact'] });
   const result = sanitizeObject({ contact: 'user@example.com', name: '$admin' }, o);
-  assert.deepStrictEqual(result, { contact: 'user@example.com', name: 'admin' });
+  assert.deepStrictEqual(result, { name: 'admin' });
 });
 
 test('sanitizeObject — removeMatches removes keys matching patterns', () => {
@@ -448,14 +448,14 @@ test('removeMatches — no lastIndex leakage in pattern.test', () => {
 });
 
 test('maxDepth — stops recursion at limit', () => {
-  const o = opts({ maxDepth: 1 });
+  const o = opts({ maxDepth: 1, maxDepthBehavior: 'preserve' });
   const input = {
     level1: '$admin',
     nested: { level2: '$danger', deep: { level3: '$hidden' } },
   };
   const result = sanitizeValue(input, o);
   assert.strictEqual(result.level1, 'admin');
-  // depth 1 → nested object preserved unsanitized (default maxDepthBehavior: 'preserve')
+  // depth 1 → nested object preserved unsanitized (maxDepthBehavior: 'preserve')
   assert.deepStrictEqual(result.nested, { level2: '$danger', deep: { level3: '$hidden' } });
 });
 
@@ -467,7 +467,7 @@ test('maxDepth — null means unlimited', () => {
 });
 
 test('maxDepth — depth 2 sanitizes 2 levels deep', () => {
-  const o = opts({ maxDepth: 2 });
+  const o = opts({ maxDepth: 2, maxDepthBehavior: 'preserve' });
   const input = { a: { b: '$ok', c: { d: '$stop' } } };
   const result = sanitizeValue(input, o);
   assert.strictEqual(result.a.b, 'ok'); // string at depth 1 — always sanitized
@@ -475,7 +475,7 @@ test('maxDepth — depth 2 sanitizes 2 levels deep', () => {
 });
 
 test('maxDepth — arrays count as depth', () => {
-  const o = opts({ maxDepth: 1 });
+  const o = opts({ maxDepth: 1, maxDepthBehavior: 'preserve' });
   const input = [{ name: '$admin' }];
   const result = sanitizeValue(input, o);
   // array at depth 0 → enters array (depth 1), object inside at depth 1 >= maxDepth → preserved unsanitized

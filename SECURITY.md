@@ -3,13 +3,13 @@
 ## Supported versions
 
 `@exortek/*` packages follow **semver**. Security fixes land on the current major line of each package; older major
-lines are not patched unless the project makes an explicit LTS commitment (none does today).
+lines are not patched unless the project makes an explicit LTS commitment. The `3.x` line receives security fixes only.
 
 | Package                           | Supported       |
 |-----------------------------------|-----------------|
-| `@exortek/nosql-sanitize-core`    | `3.x` — current |
-| `@exortek/express-mongo-sanitize` | `3.x` — current |
-| `@exortek/fastify-mongo-sanitize` | `3.x` — current |
+| `@exortek/nosql-sanitize-core`    | `4.x` — current |
+| `@exortek/express-mongo-sanitize` | `4.x` — current |
+| `@exortek/fastify-mongo-sanitize` | `4.x` — current |
 
 ## Reporting a vulnerability
 
@@ -63,7 +63,7 @@ keep you off the credits.
 - **Third-party dependencies** — report those to their maintainers. Where a fix would land in one of our packages (e.g.
   we're pinning a known-vulnerable version), we do want to hear about it.
 - **Misconfiguration on the consumer side** — e.g. mounting the middleware after the route that reads the body, using
-  the fail-open `maxDepthBehavior: 'preserve'` default, or parsing body content types that are not listed in
+  the fail-open `maxDepthBehavior: 'preserve'` setting, or parsing body content types that are not listed in
   `contentTypes`. The documented behaviour is not a vulnerability.
 - **NoSQL injection in code that never runs the sanitizer.** This library sanitizes request data at the framework
   boundary; it cannot protect a query built from a source it never saw.
@@ -81,8 +81,8 @@ reporting policy above.
 - **No `RegExp.lastIndex` leakage.** Shared pattern objects never carry state between calls — a global-flagged regex
   cannot make one request's match position bleed into the next (covered by a regression test).
 - **Bounded recursion.** `maxDepth` caps traversal, and the depth guard is enforced identically for objects and arrays.
-  With the default `maxDepth: null`, an internal 256-level ceiling throws `NoSQLSanitizeError('max_depth')`, so a
-  deeply-nested payload cannot exhaust the stack. Set `maxDepth` explicitly in production.
+  The default `maxDepth: 32` drops anything deeper; with `maxDepth: null`, an internal 256-level ceiling throws
+  `NoSQLSanitizeError('max_depth')`, so a deeply-nested payload cannot exhaust the stack.
 - **Every failure carries a machine-readable code.** `NoSQLSanitizeError` exposes a stable `code` so callers branch on
   `code`, not on message text that can change across versions.
 - **Framework-version parity.** The Express (4 + 5) and Fastify (4 + 5) integration suites (`yarn test:servers`) assert
@@ -95,8 +95,8 @@ reporting policy above.
 - **It does not validate types or shape.** After sanitization `{ "password": { "ne": null } }` is still an object. Use
   schema validation (JSON schema, Zod, Joi) and/or Mongoose casting / `sanitizeFilter` so only the expected types reach
   your queries.
-- **It does not modify dotted keys by default** (`{ "profile.isAdmin": true }`). Set `dotKeys: 'remove'` or
-  `'replace'`, and never spread untrusted objects into `$set` or similar update operators.
+- **It does not make spreading untrusted objects into `$set` safe.** Dotted keys (`{ "profile.isAdmin": true }`) are
+  renamed by default (`dotKeys: 'replace'`), but plain keys still overwrite whatever field they name.
 - **It only sees what it is configured to see.** Body content types outside `contentTypes`, request fields outside
   `sanitizeObjects`, skipped routes, and data from other sources (headers, cookies, WebSocket messages, queues) are not
   touched.

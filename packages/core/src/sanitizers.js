@@ -91,7 +91,7 @@ const sanitizeArray = (arr, options, depth, path = '') => {
 
   let out = result;
   if (removed) out = out.filter((x) => x !== REMOVE);
-  // true / 'falsy' drop every falsy item; 'nullish' only null and undefined
+  // resolveOptions turns true into 'nullish'; 'falsy' drops every falsy item
   if (arrayOptions.filterNull === 'nullish') out = out.filter((x) => x != null);
   else if (arrayOptions.filterNull) out = out.filter(Boolean);
   if (arrayOptions.distinct) out = [...new Set(out)];
@@ -108,7 +108,6 @@ const sanitizeObject = (obj, options, depth, path = '') => {
     deniedKeys,
     removeMatches,
     allowPrototypeKeys,
-    preserveEmails,
     dotKeys,
     replaceWith,
     _combinedPattern,
@@ -127,11 +126,8 @@ const sanitizeObject = (obj, options, depth, path = '') => {
     const key = keys[i];
     const val = obj[key];
 
+    // Denied keys always go, even when the value looks like an email
     if (deniedKeys.size && deniedKeys.has(key)) {
-      if (preserveEmails && isEmail(val)) {
-        acc[sanitizeString(key, options)] = val;
-        continue;
-      }
       if (auditing) emitRemoved(onSanitize, 'deniedKey', key, keyPath(path, key), val);
       if (debugOn) log(debug, 'debug', 'OBJECT', `Key '${key}' denied`);
       continue;
@@ -209,7 +205,7 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    // true / 'falsy' drop every falsy value; 'empty' keeps 0 and false
+    // resolveOptions turns true into 'empty' (keeps 0 and false); 'falsy' drops every falsy value
     if (removeEmpty && (removeEmpty === 'empty' ? isEmptyValue(sanitizedValue) : !sanitizedValue)) {
       if (auditing) emitRemoved(onSanitize, 'removeEmpty', key, keyPath(path, sanitizedKey), val, sanitizedKey);
       continue;

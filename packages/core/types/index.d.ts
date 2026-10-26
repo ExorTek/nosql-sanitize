@@ -14,9 +14,9 @@ declare namespace noSQLSanitizeCore {
 
   export interface ArrayOptions {
     /**
-     * Filter array items after sanitization. `true` / `'falsy'` remove every
-     * **falsy** item (`null`, `undefined`, `0`, `''`, `false`), not only `null`;
-     * `'nullish'` removes only `null` and `undefined`. @default false
+     * Filter array items after sanitization. `true` / `'nullish'` remove `null`
+     * and `undefined`; `'falsy'` removes every **falsy** item (`null`, `undefined`,
+     * `0`, `''`, `false`), the v3 meaning of `true`. @default false
      */
     filterNull?: boolean | 'falsy' | 'nullish';
     /** Remove duplicate values from arrays. @default false */
@@ -149,9 +149,9 @@ declare namespace noSQLSanitizeCore {
     recursive?: boolean;
     /**
      * Remove keys whose value is empty after sanitization, and keys that sanitize
-     * to an empty string. `true` / `'falsy'` remove every **falsy** value (`''`,
-     * `null`, `undefined`, `0`, `false`); `'empty'` keeps `0` and `false` and
-     * removes `''`, `null`, `undefined`, `{}` and `[]`.
+     * to an empty string. `true` / `'empty'` remove `''`, `null`, `undefined`,
+     * `{}` and `[]` and keep `0` and `false`; `'falsy'` removes every **falsy**
+     * value (`''`, `null`, `undefined`, `0`, `false`), the v3 meaning of `true`.
      * @default false
      */
     removeEmpty?: boolean | 'falsy' | 'empty';
@@ -160,14 +160,14 @@ declare namespace noSQLSanitizeCore {
      * Strings are always sanitized regardless of depth.
      * `0` sanitizes only top-level strings. `null` = no limit, but nesting past
      * 256 levels throws a `max_depth` NoSQLSanitizeError instead of overflowing the stack.
-     * @default null
+     * @default 32
      */
     maxDepth?: number | null;
     /**
      * What happens to values nested deeper than `maxDepth`.
-     * `'preserve'` returns them UNSANITIZED (v2 compatible), `'remove'` drops
-     * them (fail-closed, recommended), `'throw'` rejects the request.
-     * @default 'preserve'
+     * `'remove'` drops them (fail-closed), `'preserve'` returns them UNSANITIZED
+     * (v3 default), `'throw'` rejects the request.
+     * @default 'remove'
      */
     maxDepthBehavior?: MaxDepthBehavior;
     /**
@@ -207,12 +207,11 @@ declare namespace noSQLSanitizeCore {
      * Keys containing a `.` (e.g. `'profile.isAdmin'`), which become nested
      * writes when spread into `$set`. `'replace'` swaps each `.` for
      * `replaceWith`; `'remove'` drops the pair.
-     * @default 'allow'
+     * @default 'replace'
      */
     dotKeys?: DotKeysBehavior;
     /**
-     * Remove these keys (empty = deny none). Note: with `preserveEmails: true`
-     * a denied key whose value looks like an email is kept.
+     * Remove these keys at every depth (empty = deny none), whatever their value.
      * @default []
      */
     deniedKeys?: string[];
@@ -247,7 +246,8 @@ declare namespace noSQLSanitizeCore {
     onInjection: OnInjection;
     onSanitize: ((event: SanitizeEvent) => void) | null;
     recursive: boolean;
-    removeEmpty: boolean | 'falsy' | 'empty';
+    /** `true` is resolved to `'empty'`. */
+    removeEmpty: false | 'falsy' | 'empty';
     maxDepth: number | null;
     maxDepthBehavior: MaxDepthBehavior;
     preserveEmails: boolean;

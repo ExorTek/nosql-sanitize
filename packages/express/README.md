@@ -86,7 +86,7 @@ app.use(mongoSanitize());
 | Runtime      | Supported                | Notes                                                   |
 | ------------ | ------------------------ | ------------------------------------------------------- |
 | **Express**  | `4.x` and `5.x`          | Both majors covered by the integration test suite.      |
-| **Node.js**  | `>= 18`                  | Uses only stable core APIs.                              |
+| **Node.js**  | `>= 20`                  | Uses only stable core APIs.                              |
 | **Modules**  | CommonJS + ESM           | `require()` and `import` both work.                     |
 | **Types**    | Bundled `.d.ts`          | No `@types/*` package needed.                            |
 
@@ -101,8 +101,9 @@ app.use(mongoSanitize({
   mode: 'auto',             // 'auto' | 'manual'
   skipRoutes: [],            // Routes to skip (string or RegExp)
   recursive: true,           // Sanitize nested objects
-  maxDepth: null,            // Max recursion depth (0 = top-level only, null = no limit, hard ceiling 256)
-  maxDepthBehavior: 'preserve', // 'preserve' (default) | 'remove' (recommended) | 'throw'
+  maxDepth: 32,              // Max recursion depth (0 = top-level only, null = no limit, hard ceiling 256)
+  maxDepthBehavior: 'remove', // 'remove' (fail-closed) | 'throw' | 'preserve' (passes raw data through)
+  dotKeys: 'replace',        // Keys with '.': 'replace' (with replaceWith) | 'remove' | 'allow'
   preserveEmails: true,      // Preserve email-looking values (also bypasses custom patterns)
   allowPrototypeKeys: false, // Block __proto__/constructor/prototype keys
   onSanitize: (event) => {
@@ -161,7 +162,8 @@ app.use(mongoSanitize({ contentTypes: null })); // sanitize every content type (
 ## 🔒 Security Defaults
 
 - **Prototype pollution protection**: `__proto__`, `constructor`, `prototype` keys are stripped by default — including smuggled variants that only collapse to a dangerous key *after* sanitization.
-- **Configurable depth limiting**: set `maxDepthBehavior: 'remove'` for fail-closed security on deeply nested payloads (recommended in production).
+- **Fail-closed depth limiting**: values nested deeper than `maxDepth` (32) are dropped by default (`maxDepthBehavior: 'remove'`).
+- **Dotted keys neutralized**: keys like `profile.isAdmin` become `profileisAdmin` by default (`dotKeys: 'replace'`).
 - **Email preservation**: email-looking values are passed through untouched by default, so `@` is not mangled.
 
 > Reporting a vulnerability? See the repository [security policy](../../SECURITY.md).

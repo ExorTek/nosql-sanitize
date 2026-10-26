@@ -203,9 +203,10 @@ const TESTS = [
     method: 'POST',
     path: '/arrayopts/test',
     body: { items: ['$a', '', '$a', null, 'b', 'b'] },
+    // filterNull: true drops null only ('nullish'); '' stays
     assert: (r) => {
       const items = r.data.body.items;
-      return items.length === 2 && items[0] === 'a' && items[1] === 'b';
+      return items.length === 3 && items[0] === 'a' && items[1] === '' && items[2] === 'b';
     },
   },
   {

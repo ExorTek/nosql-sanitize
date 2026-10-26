@@ -142,7 +142,7 @@ for (const version of expressVersions) {
     });
 
     assert.strictEqual(response.status, 200);
-    assert.deepStrictEqual(await response.json(), { username: 'admin', email: 'test@example.com', role: 'super' });
+    assert.deepStrictEqual(await response.json(), { username: 'admin', role: 'super' });
     server.close();
   });
 
@@ -395,7 +395,8 @@ for (const version of expressVersions) {
     assert.strictEqual(response.status, 200);
     const data = await response.json();
     assert.strictEqual(data.name, 'admin');
-    assert.deepStrictEqual(data.nested, { inner: '$danger' });
+    // Over-depth values are dropped (maxDepthBehavior: 'remove')
+    assert.strictEqual(data.nested, undefined);
     server.close();
   });
 }

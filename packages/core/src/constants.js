@@ -56,15 +56,16 @@ const DEFAULT_OPTIONS = deepFreeze({
   onInjection: 'sanitize',
   onSanitize: null,
   recursive: true,
-  // true / 'falsy' → drop falsy values ('', null, undefined, 0, false)
-  // 'empty'        → drop '', null, undefined, {} and [] only
+  // true / 'empty' → drop '', null, undefined, {} and [] (0 and false are kept)
+  // 'falsy'        → drop every falsy value ('', null, undefined, 0, false)
   removeEmpty: false,
-  maxDepth: null,
+  // null → no limit below the HARD_MAX_DEPTH ceiling
+  maxDepth: 32,
   // What to do with values nested deeper than `maxDepth`.
-  //   'preserve' → return the value UNSANITIZED (v2 compatible, default)
-  //   'remove'   → drop the over-depth value (fail-closed, recommended)
+  //   'preserve' → return the value UNSANITIZED (v3 default, fail-open)
+  //   'remove'   → drop the over-depth value (fail-closed, default)
   //   'throw'    → throw NoSQLSanitizeError
-  maxDepthBehavior: 'preserve',
+  maxDepthBehavior: 'remove',
   // Email-looking values are exempt from sanitization when true.
   // NOTE: this exemption also bypasses any custom `patterns`. Set to false
   // if you supply custom patterns that must apply to email values too.
@@ -78,10 +79,10 @@ const DEFAULT_OPTIONS = deepFreeze({
   // Their values are still sanitized.
   allowedOperators: [],
   // Keys containing '.' (e.g. 'profile.isAdmin', dangerous when spread into $set).
-  //   'allow'   → keep as-is (default)
-  //   'replace' → replace each '.' with `replaceWith`
+  //   'allow'   → keep as-is (v3 default)
+  //   'replace' → replace each '.' with `replaceWith` (default)
   //   'remove'  → drop the key-value pair
-  dotKeys: 'allow',
+  dotKeys: 'replace',
   deniedKeys: [],
   stringOptions: {
     trim: false,
@@ -89,7 +90,7 @@ const DEFAULT_OPTIONS = deepFreeze({
     maxLength: null,
   },
   arrayOptions: {
-    // true / 'falsy' → drop falsy items; 'nullish' → drop null and undefined only
+    // true / 'nullish' → drop null and undefined; 'falsy' → drop every falsy item
     filterNull: false,
     distinct: false,
   },
