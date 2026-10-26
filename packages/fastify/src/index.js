@@ -1,7 +1,14 @@
 'use strict';
 
 const fp = require('fastify-plugin');
-const { resolveOptions, handleRequest, shouldSkipRoute, log, isPlainObject } = require('@exortek/nosql-sanitize-core');
+const {
+  resolveOptions,
+  handleRequest,
+  shouldSkipRoute,
+  log,
+  isPlainObject,
+  NoSQLSanitizeError,
+} = require('@exortek/nosql-sanitize-core');
 
 const setup = (fastify, options) => {
   // Fastify parses params before hooks run, so they're sanitized by default here
@@ -37,13 +44,43 @@ const setup = (fastify, options) => {
   }
 
   if (opts.mode === 'auto') {
+    // Route-level config.mongoSanitize: false skips the route, an object overrides the plugin options
+    const resolveRoute = (config) => {
+      const route = config?.mongoSanitize;
+      if (route === undefined || route === true) return opts;
+      if (route === false) return null;
+      if (!isPlainObject(route)) {
+        throw new NoSQLSanitizeError('Invalid configuration: "config.mongoSanitize"', 'type_error');
+      }
+      return resolveOptions({ ...baseOptions, ...route });
+    };
+
+    // Resolve at registration too, so a bad route config fails at startup instead of on a request
+    fastify.addHook('onRoute', (routeOptions) => {
+      resolveRoute(routeOptions.config);
+    });
+
+    // A route's config object is the same on every request, so resolve it once
+    const routeCache = new WeakMap();
+    const optionsFor = (request) => {
+      const config = request.routeOptions?.config;
+      if (!config) return opts;
+      let resolved = routeCache.get(config);
+      if (resolved === undefined) {
+        resolved = resolveRoute(config);
+        routeCache.set(config, resolved);
+      }
+      return resolved;
+    };
+
     fastify.addHook('preHandler', (request, reply, done) => {
       if (shouldSkipRoute(request.url, opts.skipRoutes, opts.debug)) {
         return done();
       }
       // onInjection: 'reject' and maxDepthBehavior: 'throw' throw; hand the error to Fastify
       try {
-        handleRequest(request, opts);
+        const routeOpts = optionsFor(request);
+        if (routeOpts) handleRequest(request, routeOpts);
       } catch (err) {
         return done(err);
       }
