@@ -7,12 +7,21 @@ const helpers = require('./helpers');
 
 const NESTED_OPTIONS = Object.freeze(['stringOptions', 'arrayOptions', 'debug']);
 
-// An option set to undefined means "use the default", same as leaving it out
+// An option set to undefined means "use the default", same as leaving it out.
+// Copies only when there is something to drop; the result is only ever spread, never kept.
 const withoutUndefined = (obj) => {
-  const out = {};
-  for (const key of Object.keys(obj)) if (obj[key] !== undefined) out[key] = obj[key];
+  let out = obj;
+  const keys = Object.keys(obj);
+  for (let i = 0; i < keys.length; i++) {
+    if (obj[keys[i]] !== undefined) continue;
+    if (out === obj) out = { ...obj };
+    delete out[keys[i]];
+  }
   return out;
 };
+
+const mergeNested = (key, nested) =>
+  nested === undefined ? { ...DEFAULT_OPTIONS[key] } : { ...DEFAULT_OPTIONS[key], ...withoutUndefined(nested) };
 
 /**
  * Resolves and validates configuration options by merging user-provided options
@@ -32,12 +41,6 @@ const resolveOptions = (rawOptions = {}) => {
   }
   const userOptions = withoutUndefined(rawOptions);
 
-  const opts = {
-    ...DEFAULT_OPTIONS,
-    ...userOptions,
-    sanitizeObjects: userOptions.sanitizeObjects || DEFAULT_OPTIONS.sanitizeObjects,
-  };
-
   // Nested objects are checked before their merge: spreading a string or array into the
   // defaults would hide the mistake from validateOptions
   for (const key of NESTED_OPTIONS) {
@@ -45,8 +48,16 @@ const resolveOptions = (rawOptions = {}) => {
     if (nested !== undefined && !helpers.isPlainObject(nested)) {
       throw new NoSQLSanitizeError(`Invalid configuration: "${key}"`, 'type_error');
     }
-    opts[key] = { ...DEFAULT_OPTIONS[key], ...withoutUndefined(nested || {}) };
   }
+
+  const opts = {
+    ...DEFAULT_OPTIONS,
+    ...userOptions,
+    sanitizeObjects: userOptions.sanitizeObjects || DEFAULT_OPTIONS.sanitizeObjects,
+    stringOptions: mergeNested('stringOptions', userOptions.stringOptions),
+    arrayOptions: mergeNested('arrayOptions', userOptions.arrayOptions),
+    debug: mergeNested('debug', userOptions.debug),
+  };
 
   helpers.validateOptions(opts);
 
