@@ -43,7 +43,7 @@ declare namespace noSQLSanitizeCore {
 
   /** Why a key/value pair was removed (only present when `type === 'removed'`). */
   export type SanitizeRemoveReason =
-    'deniedKey' | 'notAllowed' | 'prototypePollution' | 'removeMatches' | 'removeEmpty' | 'maxDepth';
+    'deniedKey' | 'notAllowed' | 'prototypePollution' | 'removeMatches' | 'removeEmpty' | 'maxDepth' | 'circular';
 
   /**
    * Event passed to the `onSanitize` callback.
@@ -82,10 +82,10 @@ declare namespace noSQLSanitizeCore {
     sanitizeObjects?: string[];
     /**
      * Only sanitize request body for these content types.
-     * Set to `null` to sanitize all content types. Bodies with any other content
-     * type (e.g. `multipart/form-data`, `application/vnd.api+json`) pass through
-     * unsanitized. Query/params are always sanitized regardless.
-     * @default ['application/json', 'application/x-www-form-urlencoded']
+     * `+json` types (e.g. `application/vnd.api+json`) are treated as JSON when
+     * `application/json` is listed. Set to `null` to sanitize all content types;
+     * other bodies pass through unsanitized. Query/params are always sanitized.
+     * @default ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']
      */
     contentTypes?: string[] | null;
     /** Sanitization mode. @default 'auto' */

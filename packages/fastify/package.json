@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@exortek/nosql-sanitize-core": "workspace:^",
-    "fastify-plugin": "^6.0.0"
+    "fastify-plugin": "^6.0.1"
   },
   "peerDependencies": {
     "fastify": ">=4.0.0"

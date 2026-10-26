@@ -151,6 +151,20 @@ formApp.use(mongoSanitize());
 formApp.post('/test', (req, res) => res.json({ body: req.body }));
 app.use('/form', formApp);
 
+const multer = require('multer');
+
+const mpApp = express();
+mpApp.use(multer().any());
+mpApp.use(mongoSanitize());
+mpApp.post('/test', (req, res) => res.json({ body: req.body, files: (req.files || []).length }));
+app.use('/multipart', mpApp);
+
+const plusJsonApp = express();
+plusJsonApp.use(express.json({ type: ['application/json', 'application/*+json'] }));
+plusJsonApp.use(mongoSanitize());
+plusJsonApp.post('/test', (req, res) => res.json({ body: req.body }));
+app.use('/plusjson', plusJsonApp);
+
 app.use(express.json());
 app.param('username', paramSanitizeHandler());
 app.get('/user/:username', (req, res) => res.json({ username: req.params.username }));

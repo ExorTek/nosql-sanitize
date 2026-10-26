@@ -112,7 +112,7 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `replaceWith`        | `string`               | `''`                                                        | String to replace matched patterns (like `$`) with.                           |
 | `removeMatches`      | `boolean`              | `false`                                                     | If `true`, removes the entire key-value pair if a match is found.             |
 | `sanitizeObjects`    | `string[]`             | `['body', 'query']`                                         | Fields on the request object to sanitize.                                     |
-| `contentTypes`       | `string[] \| null`     | `['application/json', 'application/x-www-form-urlencoded']` | Only sanitize `body` for these content types. `null` = all.                   |
+| `contentTypes`       | `string[] \| null`     | `['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']` | Only sanitize `body` for these content types (`+json` types follow `application/json`). `null` = all. |
 | `skipRoutes`         | `(string \| RegExp)[]` | `[]`                                                        | Routes to ignore during auto-sanitization.                                    |
 | `recursive`          | `boolean`              | `true`                                                      | Whether to recursively sanitize nested objects/arrays.                        |
 | `maxDepth`           | `number \| null`       | `null`                                                      | Maximum recursion depth. `0` = top-level strings only. `null` = no limit (throws `max_depth` past 256 levels). |
@@ -172,7 +172,7 @@ app.use(mongoSanitize({
 | Field            | Description                                                                                                                   |
 |:-----------------|:------------------------------------------------------------------------------------------------------------------------------|
 | `type`           | `'value'`, `'key'`, `'both'`, or `'removed'`                                                                                  |
-| `reason`         | Only for `'removed'`: `'deniedKey'`, `'notAllowed'`, `'prototypePollution'`, `'removeMatches'`, `'removeEmpty'`, `'maxDepth'` |
+| `reason`         | Only for `'removed'`: `'deniedKey'`, `'notAllowed'`, `'prototypePollution'`, `'removeMatches'`, `'removeEmpty'`, `'maxDepth'`, `'circular'` |
 | `key`            | Original key (e.g., `'$gt'`)                                                                                                  |
 | `sanitizedKey`   | Key after sanitization (e.g., `'gt'`)                                                                                         |
 | `path`           | Full dotted path (e.g., `'body.user.$gt'`)                                                                                    |
@@ -244,18 +244,20 @@ app.use(mongoSanitize({
 
 ### Content-Type Guard
 
-Only `application/json` and `application/x-www-form-urlencoded` request bodies are sanitized by default. The match is on the exact MIME type, and the `query` object is always sanitized.
+By default, `application/json`, `application/x-www-form-urlencoded` and `multipart/form-data` request bodies are sanitized. Any `+json` type (`application/vnd.api+json`, `application/merge-patch+json`, …) is treated as JSON whenever `application/json` is in the list. The `query` object is always sanitized.
 
-> **Warning**: bodies with any other content type are passed through **unsanitized**. That includes `multipart/form-data` and `+json` types such as `application/vnd.api+json` or `application/merge-patch+json`. Body parsers like multer/busboy turn multipart fields such as `user[$ne]=x` into `{ user: { $ne: 'x' } }`, so a multipart route is just as injectable as a JSON one. If you parse any of these types, add them to `contentTypes`. Sanitization only touches the parsed plain-object body, never file streams or buffers.
+Multipart is included because body parsers like multer/busboy turn a field such as `user[$ne]=x` into `{ user: { $ne: 'x' } }`, so a multipart route is just as injectable as a JSON one. Only the parsed plain-object fields are touched, never file streams or buffers. Circular references (for example `@fastify/multipart` field objects, whose `fields` property points back at the body) are cut and reported via `onSanitize` with reason `'circular'`.
+
+> Bodies with any other content type pass through **unsanitized**. If you parse other types, add them to `contentTypes`.
 
 ```js
-// Also sanitize multipart forms and JSON:API bodies
+// Add GraphQL bodies (keep the defaults you still need)
 app.use(mongoSanitize({
   contentTypes: [
     'application/json',
     'application/x-www-form-urlencoded',
     'multipart/form-data',
-    'application/vnd.api+json',
+    'application/graphql',
   ],
 }));
 
@@ -271,11 +273,6 @@ The defaults favor backward compatibility. For production, we recommend:
 app.use(mongoSanitize({
   maxDepth: 32,               // bound recursion…
   maxDepthBehavior: 'remove', // …and drop over-depth data instead of passing it through raw
-  contentTypes: [            // cover every body type you actually parse
-    'application/json',
-    'application/x-www-form-urlencoded',
-    'multipart/form-data',
-  ],
 }));
 ```
 

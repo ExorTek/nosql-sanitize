@@ -45,7 +45,7 @@ const DEFAULT_OPTIONS = deepFreeze({
   replaceWith: '',
   removeMatches: false,
   sanitizeObjects: ['body', 'query'],
-  contentTypes: ['application/json', 'application/x-www-form-urlencoded'],
+  contentTypes: ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'],
   mode: 'auto',
   skipRoutes: [],
   customSanitizer: null,
