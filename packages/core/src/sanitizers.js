@@ -14,6 +14,13 @@ const ancestors = [];
 
 const keyPath = (path, key) => (path ? `${path}.${key}` : `${key}`);
 
+// Reports a dropped pair to onSanitize. sanitizedKey is only set once the key has been sanitized.
+const emitRemoved = (onSanitize, reason, key, path, originalValue, sanitizedKey) => {
+  const event = { type: 'removed', reason, key, path, originalValue, sanitizedValue: undefined };
+  if (sanitizedKey !== undefined) event.sanitizedKey = sanitizedKey;
+  onSanitize(event);
+};
+
 const sanitizeString = (str, options, isValue = false) => {
   if (!isString(str) || (options.preserveEmails && isEmail(str))) return str;
 
@@ -74,16 +81,7 @@ const sanitizeArray = (arr, options, depth, path = '') => {
 
     const s = sanitizeValue(item, options, true, depth, auditing ? `${path}[${i}]` : '');
     if (s === REMOVE || s === CIRCULAR) {
-      if (auditing) {
-        onSanitize({
-          type: 'removed',
-          reason: s === CIRCULAR ? 'circular' : 'maxDepth',
-          key: String(i),
-          path: `${path}[${i}]`,
-          originalValue: item,
-          sanitizedValue: undefined,
-        });
-      }
+      if (auditing) emitRemoved(onSanitize, s === CIRCULAR ? 'circular' : 'maxDepth', String(i), `${path}[${i}]`, item);
       result[i] = REMOVE;
       removed++;
       continue;
@@ -117,6 +115,8 @@ const sanitizeObject = (obj, options, depth, path = '') => {
     onSanitize,
   } = options;
   const auditing = onSanitize != null;
+  // Checked once so the hot path never builds log messages it would discard
+  const debugOn = debug?.enabled === true;
 
   const acc = {};
   const keys = Object.keys(obj);
@@ -130,16 +130,8 @@ const sanitizeObject = (obj, options, depth, path = '') => {
         acc[sanitizeString(key, options)] = val;
         continue;
       }
-      if (auditing)
-        onSanitize({
-          type: 'removed',
-          reason: 'deniedKey',
-          key,
-          path: keyPath(path, key),
-          originalValue: val,
-          sanitizedValue: undefined,
-        });
-      log(debug, 'debug', 'OBJECT', `Key '${key}' denied`);
+      if (auditing) emitRemoved(onSanitize, 'deniedKey', key, keyPath(path, key), val);
+      if (debugOn) log(debug, 'debug', 'OBJECT', `Key '${key}' denied`);
       continue;
     }
 
@@ -147,16 +139,8 @@ const sanitizeObject = (obj, options, depth, path = '') => {
     const isOperator = allowedOperators.size !== 0 && allowedOperators.has(key);
 
     if (!isOperator && allowedKeys.size && !allowedKeys.has(key)) {
-      if (auditing)
-        onSanitize({
-          type: 'removed',
-          reason: 'notAllowed',
-          key,
-          path: keyPath(path, key),
-          originalValue: val,
-          sanitizedValue: undefined,
-        });
-      log(debug, 'debug', 'OBJECT', `Key '${key}' not in allowedKeys`);
+      if (auditing) emitRemoved(onSanitize, 'notAllowed', key, keyPath(path, key), val);
+      if (debugOn) log(debug, 'debug', 'OBJECT', `Key '${key}' not in allowedKeys`);
       continue;
     }
 
@@ -165,77 +149,35 @@ const sanitizeObject = (obj, options, depth, path = '') => {
     // Before the prototype guard, so 'replace' can't assemble '__proto__' from '__pro.to__'
     if (dotKeys !== 'allow' && sanitizedKey.includes('.')) {
       if (dotKeys === 'remove') {
-        if (auditing)
-          onSanitize({
-            type: 'removed',
-            reason: 'dotKey',
-            key,
-            sanitizedKey,
-            path: keyPath(path, key),
-            originalValue: val,
-            sanitizedValue: undefined,
-          });
+        if (auditing) emitRemoved(onSanitize, 'dotKey', key, keyPath(path, key), val, sanitizedKey);
         continue;
       }
       sanitizedKey = sanitizedKey.replaceAll('.', () => replaceWith);
     }
 
     if (!allowPrototypeKeys && DANGEROUS_KEYS.has(sanitizedKey)) {
-      if (auditing)
-        onSanitize({
-          type: 'removed',
-          reason: 'prototypePollution',
-          key,
-          sanitizedKey,
-          path: keyPath(path, key),
-          originalValue: val,
-          sanitizedValue: undefined,
-        });
-      log(debug, 'warn', 'OBJECT', `Dangerous key '${key}' removed (prototype pollution guard)`);
+      if (auditing) emitRemoved(onSanitize, 'prototypePollution', key, keyPath(path, key), val, sanitizedKey);
+      if (debugOn) log(debug, 'warn', 'OBJECT', `Dangerous key '${key}' removed (prototype pollution guard)`);
       continue;
     }
 
     if (removeMatches && !isOperator) {
       _combinedPattern.lastIndex = 0;
       if (_combinedPattern.test(key)) {
-        if (auditing)
-          onSanitize({
-            type: 'removed',
-            reason: 'removeMatches',
-            key,
-            path: keyPath(path, key),
-            originalValue: val,
-            sanitizedValue: undefined,
-          });
+        if (auditing) emitRemoved(onSanitize, 'removeMatches', key, keyPath(path, key), val);
         continue;
       }
     }
 
     if (removeEmpty && !sanitizedKey) {
-      if (auditing)
-        onSanitize({
-          type: 'removed',
-          reason: 'removeEmpty',
-          key,
-          path: keyPath(path, key),
-          originalValue: val,
-          sanitizedValue: undefined,
-        });
+      if (auditing) emitRemoved(onSanitize, 'removeEmpty', key, keyPath(path, key), val);
       continue;
     }
 
     if (removeMatches && isString(val)) {
       _combinedPattern.lastIndex = 0;
       if (_combinedPattern.test(val)) {
-        if (auditing)
-          onSanitize({
-            type: 'removed',
-            reason: 'removeMatches',
-            key,
-            path: keyPath(path, key),
-            originalValue: val,
-            sanitizedValue: undefined,
-          });
+        if (auditing) emitRemoved(onSanitize, 'removeMatches', key, keyPath(path, key), val);
         continue;
       }
     }
@@ -254,29 +196,19 @@ const sanitizeObject = (obj, options, depth, path = '') => {
 
     if (sanitizedValue === REMOVE || sanitizedValue === CIRCULAR) {
       if (auditing)
-        onSanitize({
-          type: 'removed',
-          reason: sanitizedValue === CIRCULAR ? 'circular' : 'maxDepth',
+        emitRemoved(
+          onSanitize,
+          sanitizedValue === CIRCULAR ? 'circular' : 'maxDepth',
           key,
+          keyPath(path, sanitizedKey),
+          val,
           sanitizedKey,
-          path: keyPath(path, sanitizedKey),
-          originalValue: val,
-          sanitizedValue: undefined,
-        });
+        );
       continue;
     }
 
     if (removeEmpty && !sanitizedValue) {
-      if (auditing)
-        onSanitize({
-          type: 'removed',
-          reason: 'removeEmpty',
-          key,
-          sanitizedKey,
-          path: keyPath(path, sanitizedKey),
-          originalValue: val,
-          sanitizedValue: undefined,
-        });
+      if (auditing) emitRemoved(onSanitize, 'removeEmpty', key, keyPath(path, sanitizedKey), val, sanitizedKey);
       continue;
     }
 
