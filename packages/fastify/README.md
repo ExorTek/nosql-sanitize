@@ -79,7 +79,7 @@ const app = Fastify();
 app.register(mongoSanitize);
 ```
 
-> Registered as a proper [`fastify-plugin`](https://github.com/fastify/fastify-plugin), so the `preHandler` hook applies across your whole instance (it is not encapsulated to a single scope by accident).
+> Registered as a proper [`fastify-plugin`](https://github.com/fastify/fastify-plugin), so the `preValidation` hook applies across your whole instance (it is not encapsulated to a single scope by accident).
 
 ## ✅ Compatibility
 
@@ -99,12 +99,13 @@ fastify.register(mongoSanitize, {
   sanitizeObjects: ['body', 'params', 'query'],  // Fields to sanitize
   contentTypes: ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'],
   mode: 'auto',             // 'auto' | 'manual'
-  hook: 'preHandler',        // 'preHandler' | 'preValidation' (sanitize before schema validation)
+  hook: 'preValidation',     // 'preValidation' (schema sees sanitized data) | 'preHandler'
   onInjection: 'sanitize',   // 'sanitize' | 'reject' (400) | 'report' (dry run, needs onSanitize)
   skipRoutes: [],            // Routes to skip (string or RegExp)
   recursive: true,           // Sanitize nested objects
-  maxDepth: null,            // Max recursion depth (0 = top-level only, null = no limit, hard ceiling 256)
-  maxDepthBehavior: 'preserve', // 'preserve' (default) | 'remove' (recommended) | 'throw'
+  maxDepth: 32,              // Max recursion depth (0 = top-level only, null = no limit, hard ceiling 256)
+  maxDepthBehavior: 'remove', // 'remove' (fail-closed) | 'throw' | 'preserve' (passes raw data through)
+  dotKeys: 'replace',        // Keys with '.': 'replace' (with replaceWith) | 'remove' | 'allow'
   preserveEmails: true,      // Preserve email-looking values (also bypasses custom patterns)
   allowPrototypeKeys: false, // Block __proto__/constructor/prototype keys
   onSanitize: (event) => {
@@ -136,23 +137,23 @@ Route options are resolved once per route. An invalid route config fails at star
 
 ### Sanitizing before schema validation
 
-By default the plugin runs in `preHandler`, which is after Fastify validates the request against your JSON schema. The schema therefore sees the raw input. With `hook: 'preValidation'`, sanitization runs first, so the schema validates the sanitized data:
+By default the plugin runs in `preValidation`, before Fastify validates the request against your JSON schema, so the schema validates the sanitized data. With `hook: 'preHandler'` (the v3 default), sanitization runs after validation and the schema sees the raw input:
 
 ```js
-fastify.register(mongoSanitize, { hook: 'preValidation' });
+fastify.register(mongoSanitize, { hook: 'preHandler' });
 ```
 
 ### Logging through `request.log`
 
-With `debug.logger: 'request'`, debug output goes through each request's `request.log`, so it lands in your Fastify logger with the request id. Messages outside a request (plugin startup) go to `fastify.log`. It also works in a route's `config.mongoSanitize` and in manual mode.
+Debug output goes through each request's `request.log` by default (`debug.logger: 'request'`), so it lands in your Fastify logger with the request id. Messages outside a request (plugin startup) go to `fastify.log`. This also applies to a route's `config.mongoSanitize` and to manual mode.
 
 ```js
 fastify.register(mongoSanitize, {
-  debug: { enabled: true, level: 'debug', logger: 'request' },
+  debug: { enabled: true, level: 'debug' },
 });
 ```
 
-`debug.level` filters first, then Fastify's logger level applies. Any other logger object (e.g. `fastify.log`, a pino instance) can be passed as `debug.logger` too.
+`debug.level` filters first, then Fastify's logger level applies. Pass another logger object (e.g. a pino instance) as `debug.logger`, or `null` for plain `console.log` output.
 
 ### Manual Mode
 
@@ -203,7 +204,8 @@ app.post('/test', async (request) => {
 ## 🔒 Security Defaults
 
 - **Prototype pollution protection**: `__proto__`, `constructor`, `prototype` keys are stripped by default — including smuggled variants that only collapse to a dangerous key *after* sanitization.
-- **Configurable depth limiting**: set `maxDepthBehavior: 'remove'` for fail-closed security on deeply nested payloads (recommended in production).
+- **Fail-closed depth limiting**: values nested deeper than `maxDepth` (32) are dropped by default (`maxDepthBehavior: 'remove'`).
+- **Dotted keys neutralized**: keys like `profile.isAdmin` become `profileisAdmin` by default (`dotKeys: 'replace'`).
 - **Email preservation**: email-looking values are passed through untouched by default, so `@` is not mangled.
 - **Fastify null-proto query support**: Fastify parses query strings into null-prototype objects; the sanitizer handles them just like plain objects.
 

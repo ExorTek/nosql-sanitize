@@ -22,10 +22,8 @@ app.post('/api', (req, res) => {
   //
   // Output:
   // {
-  //   name: "root",              ← sanitized (string at any depth)
-  //   nested: { inner: "$deep", more: { hidden: "$secret" } }
-  //                               ↑ not recursed (depth limit)
-  // }
+  //   name: "root"               ← sanitized (string at any depth)
+  // }                            `nested` is over the limit and dropped (maxDepthBehavior: 'remove')
   res.json({ sanitized: req.body });
 });
 
@@ -38,8 +36,11 @@ app.listen(3000, () => {
 
 /**
  * maxDepth values:
- *   null | Infinity → unlimited (default)
+ *   32    → default
+ *   null  → unlimited (throws max_depth past 256 levels)
  *   1     → top-level only
  *   2     → 2 levels deep
- *   5     → safe default for most APIs
+ *
+ * maxDepthBehavior: 'remove' (default) drops over-depth values, 'throw' rejects
+ * the request, 'preserve' passes them through unsanitized (unsafe).
  */
