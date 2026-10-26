@@ -56,8 +56,8 @@ const DEFAULT_OPTIONS = deepFreeze({
   onInjection: 'sanitize',
   onSanitize: null,
   recursive: true,
-  // true / 'falsy' → drop falsy values ('', null, undefined, 0, false)
-  // 'empty'        → drop '', null, undefined, {} and [] only
+  // true / 'empty' → drop '', null, undefined, {} and [] (0 and false are kept)
+  // 'falsy'        → drop every falsy value ('', null, undefined, 0, false)
   removeEmpty: false,
   // null → no limit below the HARD_MAX_DEPTH ceiling
   maxDepth: 32,
@@ -90,7 +90,7 @@ const DEFAULT_OPTIONS = deepFreeze({
     maxLength: null,
   },
   arrayOptions: {
-    // true / 'falsy' → drop falsy items; 'nullish' → drop null and undefined only
+    // true / 'nullish' → drop null and undefined; 'falsy' → drop every falsy item
     filterNull: false,
     distinct: false,
   },

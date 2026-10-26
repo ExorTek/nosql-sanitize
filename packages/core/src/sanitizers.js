@@ -91,7 +91,7 @@ const sanitizeArray = (arr, options, depth, path = '') => {
 
   let out = result;
   if (removed) out = out.filter((x) => x !== REMOVE);
-  // true / 'falsy' drop every falsy item; 'nullish' only null and undefined
+  // resolveOptions turns true into 'nullish'; 'falsy' drops every falsy item
   if (arrayOptions.filterNull === 'nullish') out = out.filter((x) => x != null);
   else if (arrayOptions.filterNull) out = out.filter(Boolean);
   if (arrayOptions.distinct) out = [...new Set(out)];
@@ -205,7 +205,7 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    // true / 'falsy' drop every falsy value; 'empty' keeps 0 and false
+    // resolveOptions turns true into 'empty' (keeps 0 and false); 'falsy' drops every falsy value
     if (removeEmpty && (removeEmpty === 'empty' ? isEmptyValue(sanitizedValue) : !sanitizedValue)) {
       if (auditing) emitRemoved(onSanitize, 'removeEmpty', key, keyPath(path, sanitizedKey), val, sanitizedKey);
       continue;

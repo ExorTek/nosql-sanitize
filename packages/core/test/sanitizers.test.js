@@ -129,8 +129,8 @@ test('sanitizeString — strips control characters', () => {
   assert.strictEqual(sanitizeString('test\x1Fdata', o, true), 'testdata');
 });
 
-test('sanitizeArray — filterNull removes falsy', () => {
-  const o = opts({ arrayOptions: { filterNull: true } });
+test("sanitizeArray — filterNull: 'falsy' removes falsy", () => {
+  const o = opts({ arrayOptions: { filterNull: 'falsy' } });
   const result = sanitizeArray(['a', null, '', 0, false, 'b'], o);
   assert.deepStrictEqual(result, ['a', 'b']);
 });

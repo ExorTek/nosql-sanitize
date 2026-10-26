@@ -68,6 +68,10 @@ const resolveOptions = (rawOptions = {}) => {
 
   helpers.validateOptions(opts);
 
+  // `true` is shorthand for the safe mode; 'falsy' keeps the v3 meaning (drops 0 and false too)
+  if (opts.removeEmpty === true) opts.removeEmpty = 'empty';
+  if (opts.arrayOptions.filterNull === true) opts.arrayOptions.filterNull = 'nullish';
+
   // Copied only after validation (spreading a string would split it into characters),
   // so callers can't mutate the frozen defaults or each other's options
   opts.sanitizeObjects = [...opts.sanitizeObjects];

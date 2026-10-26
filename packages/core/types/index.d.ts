@@ -14,9 +14,9 @@ declare namespace noSQLSanitizeCore {
 
   export interface ArrayOptions {
     /**
-     * Filter array items after sanitization. `true` / `'falsy'` remove every
-     * **falsy** item (`null`, `undefined`, `0`, `''`, `false`), not only `null`;
-     * `'nullish'` removes only `null` and `undefined`. @default false
+     * Filter array items after sanitization. `true` / `'nullish'` remove `null`
+     * and `undefined`; `'falsy'` removes every **falsy** item (`null`, `undefined`,
+     * `0`, `''`, `false`), the v3 meaning of `true`. @default false
      */
     filterNull?: boolean | 'falsy' | 'nullish';
     /** Remove duplicate values from arrays. @default false */
@@ -149,9 +149,9 @@ declare namespace noSQLSanitizeCore {
     recursive?: boolean;
     /**
      * Remove keys whose value is empty after sanitization, and keys that sanitize
-     * to an empty string. `true` / `'falsy'` remove every **falsy** value (`''`,
-     * `null`, `undefined`, `0`, `false`); `'empty'` keeps `0` and `false` and
-     * removes `''`, `null`, `undefined`, `{}` and `[]`.
+     * to an empty string. `true` / `'empty'` remove `''`, `null`, `undefined`,
+     * `{}` and `[]` and keep `0` and `false`; `'falsy'` removes every **falsy**
+     * value (`''`, `null`, `undefined`, `0`, `false`), the v3 meaning of `true`.
      * @default false
      */
     removeEmpty?: boolean | 'falsy' | 'empty';
@@ -246,7 +246,8 @@ declare namespace noSQLSanitizeCore {
     onInjection: OnInjection;
     onSanitize: ((event: SanitizeEvent) => void) | null;
     recursive: boolean;
-    removeEmpty: boolean | 'falsy' | 'empty';
+    /** `true` is resolved to `'empty'`. */
+    removeEmpty: false | 'falsy' | 'empty';
     maxDepth: number | null;
     maxDepthBehavior: MaxDepthBehavior;
     preserveEmails: boolean;
