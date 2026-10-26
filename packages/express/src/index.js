@@ -21,6 +21,7 @@ const expressMongoSanitize = (options = {}) => {
     mode: opts.mode,
     sanitizeObjects: opts.sanitizeObjects,
   });
+  log(opts.debug, 'info', 'PLUGIN', 'Plugin initialized');
 
   return (req, res, next) => {
     const requestPath = req.path || req.url;
@@ -40,7 +41,6 @@ const expressMongoSanitize = (options = {}) => {
       };
     }
 
-    log(opts.debug, 'info', 'PLUGIN', 'Plugin initialized');
     next();
   };
 };
