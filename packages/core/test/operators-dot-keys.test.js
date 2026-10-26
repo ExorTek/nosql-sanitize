@@ -76,9 +76,14 @@ test('allowedOperators is validated', () => {
 
 /* ───────────────── dotKeys (S10 / F5) ───────────────── */
 
-test("dotKeys defaults to 'allow' (unchanged behavior)", () => {
-  const r = sanitizeValue({ 'profile.isAdmin': true }, opts());
+test("dotKeys: 'allow' keeps dotted keys", () => {
+  const r = sanitizeValue({ 'profile.isAdmin': true }, opts({ dotKeys: 'allow' }));
   assert.deepStrictEqual(r, { 'profile.isAdmin': true });
+});
+
+test("dotKeys: 'replace' also applies to email-looking keys (values are untouched)", () => {
+  const r = sanitizeValue({ 'ada@example.com': 'bob@example.com' }, opts());
+  assert.deepStrictEqual(r, { 'ada@examplecom': 'bob@example.com' });
 });
 
 test("dotKeys: 'replace' replaces dots in keys with replaceWith", () => {

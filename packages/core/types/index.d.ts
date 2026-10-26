@@ -207,7 +207,7 @@ declare namespace noSQLSanitizeCore {
      * Keys containing a `.` (e.g. `'profile.isAdmin'`), which become nested
      * writes when spread into `$set`. `'replace'` swaps each `.` for
      * `replaceWith`; `'remove'` drops the pair.
-     * @default 'allow'
+     * @default 'replace'
      */
     dotKeys?: DotKeysBehavior;
     /**

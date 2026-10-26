@@ -79,10 +79,10 @@ const DEFAULT_OPTIONS = deepFreeze({
   // Their values are still sanitized.
   allowedOperators: [],
   // Keys containing '.' (e.g. 'profile.isAdmin', dangerous when spread into $set).
-  //   'allow'   → keep as-is (default)
-  //   'replace' → replace each '.' with `replaceWith`
+  //   'allow'   → keep as-is (v3 default)
+  //   'replace' → replace each '.' with `replaceWith` (default)
   //   'remove'  → drop the key-value pair
-  dotKeys: 'allow',
+  dotKeys: 'replace',
   deniedKeys: [],
   stringOptions: {
     trim: false,
