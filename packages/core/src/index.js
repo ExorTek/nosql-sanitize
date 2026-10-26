@@ -5,22 +5,30 @@ const { NoSQLSanitizeError } = require('./errors');
 const { sanitizeString, sanitizeArray, sanitizeObject, sanitizeValue, REMOVE } = require('./sanitizers');
 const helpers = require('./helpers');
 
+// An option set to undefined means "use the default", same as leaving it out
+const withoutUndefined = (obj) => {
+  const out = {};
+  for (const key of Object.keys(obj)) if (obj[key] !== undefined) out[key] = obj[key];
+  return out;
+};
+
 /**
  * Resolves and validates configuration options by merging user-provided options
  * with default options and applying additional validations and transformations.
  * This function ensures that nested configuration objects are properly validated,
  * and prepares the resolved options for efficient runtime use.
  *
- * @param {Object} [userOptions={}] - The user-provided configuration options.
+ * @param {Object} [rawOptions={}] - The user-provided configuration options.
  * @throws {NoSQLSanitizeError} Throws an error if the provided options or nested
  * objects do not have the expected types.
  * @returns {Object} The fully resolved and validated options object, ready for use.
  */
-const resolveOptions = (userOptions = {}) => {
+const resolveOptions = (rawOptions = {}) => {
   // Ensure the base options argument is a valid plain object to prevent prototype pollution or type errors
-  if (!helpers.isPlainObject(userOptions)) {
+  if (!helpers.isPlainObject(rawOptions)) {
     throw new NoSQLSanitizeError('Options must be an object', 'type_error');
   }
+  const userOptions = withoutUndefined(rawOptions);
 
   // Validate nested object types before merge to avoid corrupting the configuration structure
   if (userOptions.debug !== undefined && !helpers.isPlainObject(userOptions.debug)) {
@@ -39,9 +47,9 @@ const resolveOptions = (userOptions = {}) => {
     ...userOptions,
     // Copy so callers can't mutate the frozen defaults (or each other's options)
     sanitizeObjects: [...(userOptions.sanitizeObjects || DEFAULT_OPTIONS.sanitizeObjects)],
-    stringOptions: { ...DEFAULT_OPTIONS.stringOptions, ...(userOptions.stringOptions || {}) },
-    arrayOptions: { ...DEFAULT_OPTIONS.arrayOptions, ...(userOptions.arrayOptions || {}) },
-    debug: { ...DEFAULT_OPTIONS.debug, ...(userOptions.debug || {}) },
+    stringOptions: { ...DEFAULT_OPTIONS.stringOptions, ...withoutUndefined(userOptions.stringOptions || {}) },
+    arrayOptions: { ...DEFAULT_OPTIONS.arrayOptions, ...withoutUndefined(userOptions.arrayOptions || {}) },
+    debug: { ...DEFAULT_OPTIONS.debug, ...withoutUndefined(userOptions.debug || {}) },
   };
 
   helpers.validateOptions(opts);
