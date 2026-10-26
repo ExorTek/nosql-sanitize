@@ -31,7 +31,7 @@ declare namespace fastifyMongoSanitize {
     /**
      * Where log messages go. `'request'` logs through `request.log` (with the request id),
      * and through `fastify.log` outside a request. `null` writes with `console.log`.
-     * @default null
+     * @default 'request'
      */
     logger?: Logger | 'request' | null;
   }
