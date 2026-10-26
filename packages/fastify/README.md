@@ -19,6 +19,8 @@ Fastify plugin for **NoSQL injection prevention**. It recursively sanitizes requ
 - [Compatibility](#-compatibility)
 - [Options](#️-options)
 - [Features](#-features)
+  - [Per-route options](#per-route-options)
+  - [Sanitizing before schema validation](#sanitizing-before-schema-validation)
   - [Manual mode](#manual-mode)
   - [Content-Type guard](#content-type-guard)
   - [TypeScript support](#typescript-support)
@@ -96,6 +98,8 @@ fastify.register(mongoSanitize, {
   sanitizeObjects: ['body', 'params', 'query'],  // Fields to sanitize
   contentTypes: ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'],
   mode: 'auto',             // 'auto' | 'manual'
+  hook: 'preHandler',        // 'preHandler' | 'preValidation' (sanitize before schema validation)
+  onInjection: 'sanitize',   // 'sanitize' | 'reject' (400) | 'report' (dry run, needs onSanitize)
   skipRoutes: [],            // Routes to skip (string or RegExp)
   recursive: true,           // Sanitize nested objects
   maxDepth: null,            // Max recursion depth (0 = top-level only, null = no limit, hard ceiling 256)
@@ -112,6 +116,30 @@ fastify.register(mongoSanitize, {
 > For the full list of options (string/array post-processing, allowed/denied keys, custom patterns, debug logging), see the [Core README](../core/README.md#configuration-options).
 
 ## 🛠 Features
+
+### Per-route options
+
+In auto mode, a route can opt out or use its own options through `config.mongoSanitize`:
+
+```js
+// No sanitization on this route
+fastify.post('/raw-webhook', { config: { mongoSanitize: false } }, handler);
+
+// Merged over the plugin options for this route only
+fastify.patch('/admin/users/:id', {
+  config: { mongoSanitize: { allowedOperators: ['$set'] } },
+}, handler);
+```
+
+Route options are resolved once per route. An invalid route config fails at startup (`fastify.ready()` rejects), not on a request. `skipRoutes` still matches the request URL as before.
+
+### Sanitizing before schema validation
+
+By default the plugin runs in `preHandler`, which is after Fastify validates the request against your JSON schema. The schema therefore sees the raw input. With `hook: 'preValidation'`, sanitization runs first, so the schema validates the sanitized data:
+
+```js
+fastify.register(mongoSanitize, { hook: 'preValidation' });
+```
 
 ### Manual Mode
 
