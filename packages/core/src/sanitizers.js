@@ -115,6 +115,8 @@ const sanitizeObject = (obj, options, depth, path = '') => {
     onSanitize,
   } = options;
   const auditing = onSanitize != null;
+  // Checked once so the hot path never builds log messages it would discard
+  const debugOn = debug?.enabled === true;
 
   const acc = {};
   const keys = Object.keys(obj);
@@ -129,7 +131,7 @@ const sanitizeObject = (obj, options, depth, path = '') => {
         continue;
       }
       if (auditing) emitRemoved(onSanitize, 'deniedKey', key, keyPath(path, key), val);
-      log(debug, 'debug', 'OBJECT', `Key '${key}' denied`);
+      if (debugOn) log(debug, 'debug', 'OBJECT', `Key '${key}' denied`);
       continue;
     }
 
@@ -138,7 +140,7 @@ const sanitizeObject = (obj, options, depth, path = '') => {
 
     if (!isOperator && allowedKeys.size && !allowedKeys.has(key)) {
       if (auditing) emitRemoved(onSanitize, 'notAllowed', key, keyPath(path, key), val);
-      log(debug, 'debug', 'OBJECT', `Key '${key}' not in allowedKeys`);
+      if (debugOn) log(debug, 'debug', 'OBJECT', `Key '${key}' not in allowedKeys`);
       continue;
     }
 
@@ -155,7 +157,7 @@ const sanitizeObject = (obj, options, depth, path = '') => {
 
     if (!allowPrototypeKeys && DANGEROUS_KEYS.has(sanitizedKey)) {
       if (auditing) emitRemoved(onSanitize, 'prototypePollution', key, keyPath(path, key), val, sanitizedKey);
-      log(debug, 'warn', 'OBJECT', `Dangerous key '${key}' removed (prototype pollution guard)`);
+      if (debugOn) log(debug, 'warn', 'OBJECT', `Dangerous key '${key}' removed (prototype pollution guard)`);
       continue;
     }
 
