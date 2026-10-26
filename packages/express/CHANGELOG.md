@@ -1,5 +1,13 @@
 # @exortek/express-mongo-sanitize
 
+## 3.1.1
+
+### Patch Changes
+
+- 8991270: `req.sanitize()` (manual mode) is now visible to TypeScript. The type augmentation targeted `module 'express'`, which never reached the `req` that route handlers receive; it now augments the global `Express.Request`.
+- Updated dependencies [d82d6bc]
+  - @exortek/nosql-sanitize-core@3.2.0
+
 ## 3.1.0
 
 ### Minor Changes
