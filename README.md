@@ -9,6 +9,8 @@
 
 `nosql-sanitize` is a lightweight and blazing-fast suite of tools designed to prevent **NoSQL Injection** attacks in Node.js applications. It recursively sanitizes user-supplied data to remove characters and patterns (like `$` and control characters) used in malicious MongoDB queries.
 
+> **Upgrading from v3?** v4 switches to fail-closed defaults. See the [migration guide](./MIGRATION-v4.md).
+
 ### Key Features
 
 - **Blazing Fast**: Optimized core engine with pre-compiled regex and minimal overhead.
