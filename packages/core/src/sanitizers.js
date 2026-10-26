@@ -104,6 +104,8 @@ const sanitizeObject = (obj, options, depth, path = '') => {
     removeMatches,
     allowPrototypeKeys,
     preserveEmails,
+    dotKeys,
+    replaceWith,
     _combinedPattern,
     debug,
     recursive,
@@ -153,7 +155,25 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    const sanitizedKey = isOperator ? key : sanitizeString(key, options);
+    let sanitizedKey = isOperator ? key : sanitizeString(key, options);
+
+    // Before the prototype guard, so 'replace' can't assemble '__proto__' from '__pro.to__'
+    if (dotKeys !== 'allow' && sanitizedKey.includes('.')) {
+      if (dotKeys === 'remove') {
+        if (auditing)
+          onSanitize({
+            type: 'removed',
+            reason: 'dotKey',
+            key,
+            sanitizedKey,
+            path: keyPath(path, key),
+            originalValue: val,
+            sanitizedValue: undefined,
+          });
+        continue;
+      }
+      sanitizedKey = sanitizedKey.replaceAll('.', () => replaceWith);
+    }
 
     if (!allowPrototypeKeys && DANGEROUS_KEYS.has(sanitizedKey)) {
       if (auditing)

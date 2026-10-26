@@ -127,3 +127,8 @@ test('dotKeys is validated', () => {
   rejects({ dotKeys: 'strip' }, 'dotKeys');
   rejects({ dotKeys: true }, 'dotKeys');
 });
+
+test("dotKeys: 'replace' inserts replaceWith literally", () => {
+  const r = sanitizeValue({ 'a.b': 1 }, opts({ dotKeys: 'replace', replaceWith: '$&' }));
+  assert.deepStrictEqual(Object.keys(r), ['a$&b']);
+});

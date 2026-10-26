@@ -103,6 +103,7 @@ const validators = Object.freeze({
   removeEmpty: isBoolean,
   // maxDepth:0 is now valid ("only top-level string sanitization").
   maxDepth: (v) => v === null || (isNumber(v) && v >= 0),
+  dotKeys: (v) => ['allow', 'replace', 'remove'].includes(v),
   maxDepthBehavior: (v) => ['preserve', 'remove', 'throw'].includes(v),
   preserveEmails: isBoolean,
   allowPrototypeKeys: isBoolean,
