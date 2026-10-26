@@ -104,10 +104,13 @@ const sanitizeObject = (obj, options, depth, path = '') => {
   const {
     removeEmpty,
     allowedKeys,
+    allowedOperators,
     deniedKeys,
     removeMatches,
     allowPrototypeKeys,
     preserveEmails,
+    dotKeys,
+    replaceWith,
     _combinedPattern,
     debug,
     recursive,
@@ -140,7 +143,10 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    if (allowedKeys.size && !allowedKeys.has(key)) {
+    // Allowed operators skip the whitelist and key sanitization; their values are still sanitized
+    const isOperator = allowedOperators.size !== 0 && allowedOperators.has(key);
+
+    if (!isOperator && allowedKeys.size && !allowedKeys.has(key)) {
       if (auditing)
         onSanitize({
           type: 'removed',
@@ -154,7 +160,25 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    const sanitizedKey = sanitizeString(key, options);
+    let sanitizedKey = isOperator ? key : sanitizeString(key, options);
+
+    // Before the prototype guard, so 'replace' can't assemble '__proto__' from '__pro.to__'
+    if (dotKeys !== 'allow' && sanitizedKey.includes('.')) {
+      if (dotKeys === 'remove') {
+        if (auditing)
+          onSanitize({
+            type: 'removed',
+            reason: 'dotKey',
+            key,
+            sanitizedKey,
+            path: keyPath(path, key),
+            originalValue: val,
+            sanitizedValue: undefined,
+          });
+        continue;
+      }
+      sanitizedKey = sanitizedKey.replaceAll('.', () => replaceWith);
+    }
 
     if (!allowPrototypeKeys && DANGEROUS_KEYS.has(sanitizedKey)) {
       if (auditing)
@@ -171,7 +195,7 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    if (removeMatches) {
+    if (removeMatches && !isOperator) {
       _combinedPattern.lastIndex = 0;
       if (_combinedPattern.test(key)) {
         if (auditing)

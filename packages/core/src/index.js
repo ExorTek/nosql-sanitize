@@ -82,6 +82,7 @@ const resolveOptions = (userOptions = {}) => {
 
   // Convert allowed and denied keys to Sets for faster inclusion checks
   opts.allowedKeys = new Set(userOptions.allowedKeys || []);
+  opts.allowedOperators = new Set(userOptions.allowedOperators || []);
   opts.deniedKeys = new Set(userOptions.deniedKeys || []);
 
   // Set max depth constraint for nested object parsing to prevent stack overflow/ReDoS attacks.

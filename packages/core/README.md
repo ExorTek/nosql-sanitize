@@ -59,7 +59,7 @@ const opts = resolveOptions({
 - Pre-compiles `patterns` into a single `_combinedPattern` regex for performance
 - Converts `skipRoutes` strings to cleaned paths in a `Set` (O(1) lookup)
 - Converts `contentTypes` to a lowercase `Set`
-- Converts `allowedKeys` / `deniedKeys` to `Set`s
+- Converts `allowedKeys` / `allowedOperators` / `deniedKeys` to `Set`s
 
 ### `handleRequest(request, options)`
 
@@ -121,6 +121,8 @@ shouldSkipRoute('/login', opts.skipRoutes);    // → false
 | `onSanitize`               | `function \| null`                  | `null`              | Audit callback. Fires for value changes, key renames, and removals.                                                   |
 | `allowedKeys`              | `string[]`                          | `[]`                | Key whitelist applied at every depth; unlisted keys are removed. Listed keys are still sanitized (`$` stripped).      |
 | `deniedKeys`               | `string[]`                          | `[]`                | Blacklist of keys to remove. With `preserveEmails: true`, a denied key with an email-looking value is kept.           |
+| `allowedOperators`         | `string[]`                          | `[]`                | `$`-operators kept verbatim at every depth (exact match). Values under them are still sanitized.                      |
+| `dotKeys`                  | `'allow' \| 'replace' \| 'remove'`  | `'allow'`           | Keys containing `.`: keep, replace each `.` with `replaceWith`, or remove the pair.                                   |
 | `stringOptions.trim`       | `boolean`                           | `false`             | Trim whitespace from string values (not keys).                                                                        |
 | `stringOptions.lowercase`  | `boolean`                           | `false`             | Convert string values (not keys) to lowercase.                                                                        |
 | `stringOptions.maxLength`  | `number \| null`                    | `null`              | Truncate string values (not keys) to this length. Must be a positive integer.                                         |
