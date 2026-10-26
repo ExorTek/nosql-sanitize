@@ -30,12 +30,12 @@ jobs:
     name: analyze (javascript-typescript)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
           # Scope analysis to shipped library source (packages/*/src) so tests,
           # examples, benchmarks, the test servers, and tooling are never
           # reported on.
           config-file: ./.github/codeql/codeql-config.yml
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@v4
