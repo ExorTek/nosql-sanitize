@@ -12,6 +12,14 @@ declare module 'fastify' {
      */
     sanitize?: (options?: fastifyMongoSanitize.SanitizeOptions) => void;
   }
+
+  interface FastifyContextConfig {
+    /**
+     * Route-level override (auto mode). `false` turns sanitization off for this route;
+     * an options object is merged over the plugin options for this route.
+     */
+    mongoSanitize?: boolean | fastifyMongoSanitize.SanitizeOptions;
+  }
 }
 
 type FastifyMongoSanitize = FastifyPluginCallback<fastifyMongoSanitize.FastifyMongoSanitizeOptions>;
@@ -30,13 +38,19 @@ declare namespace fastifyMongoSanitize {
      * @default ['body', 'params', 'query']
      */
     sanitizeObjects?: string[];
+    /**
+     * Hook that runs the sanitizer in auto mode. `'preValidation'` sanitizes before
+     * schema validation, so the schema checks the sanitized data.
+     * @default 'preHandler'
+     */
+    hook?: 'preHandler' | 'preValidation';
   }
 
   /**
    * Fastify plugin for NoSQL injection prevention.
    * Wrapped with `fastify-plugin` — no encapsulation.
    *
-   * Uses `preHandler` hook in auto mode.
+   * Uses the `preHandler` hook in auto mode (see `hook`).
    *
    * @example
    * ```js

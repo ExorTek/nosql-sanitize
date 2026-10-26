@@ -1,9 +1,19 @@
 'use strict';
 
 const fp = require('fastify-plugin');
-const { resolveOptions, handleRequest, shouldSkipRoute, log, isPlainObject } = require('@exortek/nosql-sanitize-core');
+const {
+  resolveOptions,
+  handleRequest,
+  shouldSkipRoute,
+  log,
+  isPlainObject,
+  NoSQLSanitizeError,
+} = require('@exortek/nosql-sanitize-core');
 
-const fastifyMongoSanitize = (fastify, options, done) => {
+// 'preValidation' sanitizes before schema validation, so the schema checks the sanitized data
+const HOOKS = Object.freeze(['preHandler', 'preValidation']);
+
+const setup = (fastify, options) => {
   // Fastify parses params before hooks run, so they're sanitized by default here
   const baseOptions = {
     sanitizeObjects: ['body', 'params', 'query'],
@@ -36,14 +46,47 @@ const fastifyMongoSanitize = (fastify, options, done) => {
     });
   }
 
+  const hook = options.hook === undefined ? 'preHandler' : options.hook;
+  if (!HOOKS.includes(hook)) throw new NoSQLSanitizeError('Invalid configuration: "hook"', 'type_error');
+
   if (opts.mode === 'auto') {
-    fastify.addHook('preHandler', (request, reply, done) => {
+    // Route-level config.mongoSanitize: false skips the route, an object overrides the plugin options
+    const resolveRoute = (config) => {
+      const route = config?.mongoSanitize;
+      if (route === undefined || route === true) return opts;
+      if (route === false) return null;
+      if (!isPlainObject(route)) {
+        throw new NoSQLSanitizeError('Invalid configuration: "config.mongoSanitize"', 'type_error');
+      }
+      return resolveOptions({ ...baseOptions, ...route });
+    };
+
+    // Resolve at registration too, so a bad route config fails at startup instead of on a request
+    fastify.addHook('onRoute', (routeOptions) => {
+      resolveRoute(routeOptions.config);
+    });
+
+    // A route's config object is the same on every request, so resolve it once
+    const routeCache = new WeakMap();
+    const optionsFor = (request) => {
+      const config = request.routeOptions?.config;
+      if (!config) return opts;
+      let resolved = routeCache.get(config);
+      if (resolved === undefined) {
+        resolved = resolveRoute(config);
+        routeCache.set(config, resolved);
+      }
+      return resolved;
+    };
+
+    fastify.addHook(hook, (request, reply, done) => {
       if (shouldSkipRoute(request.url, opts.skipRoutes, opts.debug)) {
         return done();
       }
       // onInjection: 'reject' and maxDepthBehavior: 'throw' throw; hand the error to Fastify
       try {
-        handleRequest(request, opts);
+        const routeOpts = optionsFor(request);
+        if (routeOpts) handleRequest(request, routeOpts);
       } catch (err) {
         return done(err);
       }
@@ -52,6 +95,16 @@ const fastifyMongoSanitize = (fastify, options, done) => {
   }
 
   log(opts.debug, 'info', 'PLUGIN', 'Plugin initialized');
+};
+
+// avvio doesn't catch a synchronous throw from a callback plugin (it crashes the process),
+// so configuration errors go through done() and reject fastify.ready() instead
+const fastifyMongoSanitize = (fastify, options, done) => {
+  try {
+    setup(fastify, options);
+  } catch (err) {
+    return done(err);
+  }
   done();
 };
 
