@@ -332,6 +332,23 @@ app.use(mongoSanitize({
 
 `'reject'` throws `NoSQLSanitizeError` with `type: 'injection_detected'` and `statusCode: 400`, which Express and Fastify turn into a 400 response (customize it in your error handler). It uses the same rules as [`hasInjection`](#outside-http-graphql-websockets-queues). Requests without an injection are still sanitized as configured. `'report'` requires `onSanitize`.
 
+### Debug Logging
+
+Debug output goes to `console.log` unless you pass a logger. Any object with `error`, `warn`, `info`, `debug` and `trace` methods works (pino, `fastify.log`, `console`). It is called pino-style: `logger.debug({ module: 'nosql-sanitize', context, data }, message)`.
+
+```js
+const pino = require('pino');
+
+app.use(mongoSanitize({
+  debug: { enabled: true, level: 'debug', logger: pino({ level: 'debug' }) },
+}));
+
+// Fastify: log through request.log, so each line carries the request id
+fastify.register(mongoSanitize, { debug: { enabled: true, level: 'debug', logger: 'request' } });
+```
+
+`debug.level` filters first, then the logger's own level applies, so set both. Sanitized values are still only logged with `logSanitizedValues: true`.
+
 ### Manual Mode
 
 If you need fine-grained control over when sanitization occurs:
