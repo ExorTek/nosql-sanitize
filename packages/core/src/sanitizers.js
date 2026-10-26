@@ -31,8 +31,10 @@ const sanitizeString = (str, options, isValue = false) => {
     if (stringOptions.maxLength) result = result.slice(0, stringOptions.maxLength);
   }
 
+  // Values may carry tokens or PII: only log them when explicitly asked to
   if (debug?.enabled && original !== result) {
-    log(debug, 'debug', 'STRING', 'Sanitized', { original, result });
+    if (debug.logSanitizedValues) log(debug, 'debug', 'STRING', 'Sanitized', { original, result });
+    else if (debug.logPatternMatches) log(debug, 'debug', 'STRING', 'Pattern matched');
   }
   return result;
 };
