@@ -35,6 +35,9 @@ declare namespace noSQLSanitizeCore {
     logSkippedRoutes?: boolean;
   }
 
+  /** What to do with object keys that contain a `.`. */
+  export type DotKeysBehavior = 'allow' | 'replace' | 'remove';
+
   /** Behavior when a value is nested deeper than `maxDepth`. */
   export type MaxDepthBehavior = 'remove' | 'throw' | 'preserve';
 
@@ -43,7 +46,14 @@ declare namespace noSQLSanitizeCore {
 
   /** Why a key/value pair was removed (only present when `type === 'removed'`). */
   export type SanitizeRemoveReason =
-    'deniedKey' | 'notAllowed' | 'prototypePollution' | 'removeMatches' | 'removeEmpty' | 'maxDepth' | 'circular';
+    | 'deniedKey'
+    | 'notAllowed'
+    | 'prototypePollution'
+    | 'dotKey'
+    | 'removeMatches'
+    | 'removeEmpty'
+    | 'maxDepth'
+    | 'circular';
 
   /**
    * Event passed to the `onSanitize` callback.
@@ -148,10 +158,25 @@ declare namespace noSQLSanitizeCore {
     /**
      * Key whitelist (empty = allow all). Applied at **every depth**: any key not
      * listed is removed. Listed keys are still sanitized (`$` is stripped), so
-     * this does not permit MongoDB operators.
+     * this does not permit MongoDB operators; use `allowedOperators` for that.
      * @default []
      */
     allowedKeys?: string[];
+    /**
+     * `$`-operators kept verbatim at every depth, e.g. `['$set']`. Exact match.
+     * They also pass the `allowedKeys` whitelist and `removeMatches`; their values
+     * are still sanitized, and `deniedKeys` still removes them. Never list
+     * operators that run JavaScript (`$where`, `$function`, `$accumulator`).
+     * @default []
+     */
+    allowedOperators?: string[];
+    /**
+     * Keys containing a `.` (e.g. `'profile.isAdmin'`), which become nested
+     * writes when spread into `$set`. `'replace'` swaps each `.` for
+     * `replaceWith`; `'remove'` drops the pair.
+     * @default 'allow'
+     */
+    dotKeys?: DotKeysBehavior;
     /**
      * Remove these keys (empty = deny none). Note: with `preserveEmails: true`
      * a denied key whose value looks like an email is kept.
@@ -195,6 +220,8 @@ declare namespace noSQLSanitizeCore {
     allowPrototypeKeys: boolean;
     patterns: RegExp[];
     allowedKeys: Set<string>;
+    allowedOperators: Set<string>;
+    dotKeys: DotKeysBehavior;
     deniedKeys: Set<string>;
     stringOptions: Required<StringOptions>;
     arrayOptions: Required<ArrayOptions>;
