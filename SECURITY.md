@@ -54,15 +54,17 @@ keep you off the credits.
 
 - Any published `@exortek/*` package listed under "Supported versions".
 - A **sanitizer bypass** — user input that reaches a MongoDB query with operator keys (`$`-prefixed), prototype-pollution
-  keys (`__proto__` / `constructor` / `prototype`), or dotted keys still intact after the middleware has run.
+  keys (`__proto__` / `constructor` / `prototype`) still intact after the middleware has run, under a configuration the
+  docs describe as safe.
 - The build/publish pipeline (npm tarball contents, `files` integrity).
 
 **Out of scope**
 
 - **Third-party dependencies** — report those to their maintainers. Where a fix would land in one of our packages (e.g.
   we're pinning a known-vulnerable version), we do want to hear about it.
-- **Misconfiguration on the consumer side** — e.g. mounting the middleware after the route that reads the body, or
-  passing `allowedKeys` that deliberately re-permit operator keys. The documented behaviour is not a vulnerability.
+- **Misconfiguration on the consumer side** — e.g. mounting the middleware after the route that reads the body, using
+  the fail-open `maxDepthBehavior: 'preserve'` default, or parsing body content types that are not listed in
+  `contentTypes`. The documented behaviour is not a vulnerability.
 - **NoSQL injection in code that never runs the sanitizer.** This library sanitizes request data at the framework
   boundary; it cannot protect a query built from a source it never saw.
 - **Docs typos, missing pages, broken README tables.** Those go through the regular issue tracker.
@@ -78,12 +80,28 @@ reporting policy above.
   any value is written back, so a crafted body cannot mutate `Object.prototype` through the sanitizer.
 - **No `RegExp.lastIndex` leakage.** Shared pattern objects never carry state between calls — a global-flagged regex
   cannot make one request's match position bleed into the next (covered by a regression test).
-- **Bounded recursion.** `maxDepth` caps traversal so a deeply-nested payload cannot exhaust the stack; the depth guard
-  is enforced identically for objects and arrays.
+- **Bounded recursion (when configured).** Setting `maxDepth` caps traversal so a deeply-nested payload cannot exhaust
+  the stack; the depth guard is enforced identically for objects and arrays. The default is `null` (unlimited), so set
+  it in production.
 - **Every failure carries a machine-readable code.** `NoSQLSanitizeError` exposes a stable `code` so callers branch on
   `code`, not on message text that can change across versions.
 - **Framework-version parity.** The Express (4 + 5) and Fastify (4 + 5) integration suites (`yarn test:servers`) assert
   the same sanitization outcome across every supported framework major, so a bypass cannot hide behind one adapter.
+
+## Threat model — what this library does NOT do
+
+`nosql-sanitize` is one layer of defence. On its own it is not enough:
+
+- **It does not validate types or shape.** After sanitization `{ "password": { "ne": null } }` is still an object. Use
+  schema validation (JSON schema, Zod, Joi) and/or Mongoose casting / `sanitizeFilter` so only the expected types reach
+  your queries.
+- **It does not modify dotted keys** (`{ "profile.isAdmin": true }`). Never spread untrusted objects into `$set` or
+  similar update operators.
+- **It only sees what it is configured to see.** Body content types outside `contentTypes`, request fields outside
+  `sanitizeObjects`, skipped routes, and data from other sources (headers, cookies, WebSocket messages, queues) are not
+  touched.
+- **It does not protect server-side JavaScript** (`$where`, `$function`, `mapReduce`) built from strings you
+  concatenate yourself.
 
 ## Safe-harbour
 

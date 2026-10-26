@@ -129,10 +129,12 @@ fastify.post('/sensitive', async (request) => {
 
 ### Content-Type Guard
 
-By default only `application/json` and `application/x-www-form-urlencoded` bodies are sanitized, so binary uploads and multipart forms are never corrupted. `request.query` is always sanitized regardless of content type.
+By default only `application/json` and `application/x-www-form-urlencoded` bodies are sanitized. `request.query` is always sanitized regardless of content type.
+
+> **Warning**: other body types pass through **unsanitized**. That includes `multipart/form-data` (e.g. `@fastify/multipart` with `attachFieldsToBody`) and `+json` types like `application/vnd.api+json`. Add every body type you parse to `contentTypes`.
 
 ```js
-fastify.register(mongoSanitize, { contentTypes: ['application/json', 'application/graphql'] });
+fastify.register(mongoSanitize, { contentTypes: ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'] });
 fastify.register(mongoSanitize, { contentTypes: null }); // sanitize every content type (use with care)
 ```
 

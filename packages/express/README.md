@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license">
 </p>
 
-Express middleware for **NoSQL injection prevention**. It recursively sanitizes request `body`, `query`, and `params` to strip the MongoDB operator characters (`$`, control bytes) attackers use to bypass your query logic — with zero configuration, on both Express 4 and Express 5.
+Express middleware for **NoSQL injection prevention**. It recursively sanitizes request `body` and `query` (and route `params` via [`paramSanitizeHandler`](#route-parameter-sanitization)) to strip the MongoDB operator characters (`$`, control bytes) attackers use to bypass your query logic — with zero configuration, on both Express 4 and Express 5.
 
 ## Contents
 
@@ -147,10 +147,12 @@ app.post('/sensitive', (req, res) => {
 
 ### Content-Type Guard
 
-By default only `application/json` and `application/x-www-form-urlencoded` bodies are sanitized, so binary uploads and multipart forms are never corrupted. `req.query` is always sanitized regardless of content type.
+By default only `application/json` and `application/x-www-form-urlencoded` bodies are sanitized. `req.query` is always sanitized regardless of content type.
+
+> **Warning**: other body types pass through **unsanitized**. That includes `multipart/form-data` (multer turns `user[$ne]=x` into `{ user: { $ne: 'x' } }`) and `+json` types like `application/vnd.api+json`. Add every body type you parse to `contentTypes`. Only the parsed fields object is touched, never `req.file(s)`.
 
 ```js
-app.use(mongoSanitize({ contentTypes: ['application/json', 'application/graphql'] }));
+app.use(mongoSanitize({ contentTypes: ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'] }));
 app.use(mongoSanitize({ contentTypes: null })); // sanitize every content type (use with care)
 ```
 
