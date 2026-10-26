@@ -58,6 +58,22 @@ for (const [name, factory] of versions) {
     await fastify.close();
   });
 
+  test(`[${name}] debug output falls back to console.log when the Fastify logger is disabled`, async () => {
+    const fastify = factory();
+    const lines = [];
+    const original = console.log;
+    console.log = (...args) => lines.push(args.join(' '));
+    try {
+      fastify.register(plugin, { debug: { enabled: true, level: 'trace' } });
+      fastify.post('/t', async (request) => request.body);
+      await post(fastify, '/t', { $a: 1 });
+    } finally {
+      console.log = original;
+    }
+    assert.ok(lines.some((l) => l.includes('[REQUEST]')));
+    await fastify.close();
+  });
+
   test(`[${name}] debug.logger: null writes with console.log`, async () => {
     const { fastify, ours } = withLogs(factory);
     const lines = [];

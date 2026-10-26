@@ -145,7 +145,7 @@ fastify.register(mongoSanitize, { hook: 'preHandler' });
 
 ### Logging through `request.log`
 
-Debug output goes through each request's `request.log` by default (`debug.logger: 'request'`), so it lands in your Fastify logger with the request id. Messages outside a request (plugin startup) go to `fastify.log`. This also applies to a route's `config.mongoSanitize` and to manual mode.
+Debug output goes through each request's `request.log` by default (`debug.logger: 'request'`), so it lands in your Fastify logger with the request id. Messages outside a request (plugin startup) go to `fastify.log`. This also applies to a route's `config.mongoSanitize` and to manual mode. If the Fastify logger is disabled (no `logger` option), output falls back to `console.log`.
 
 ```js
 fastify.register(mongoSanitize, {

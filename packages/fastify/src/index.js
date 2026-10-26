@@ -17,6 +17,9 @@ const HOOKS = Object.freeze(['preHandler', 'preValidation']);
 // outside a request. A logger object or null (console.log) opts out.
 const REQUEST_LOGGER = 'request';
 
+// Without the `logger` option Fastify installs a no-op logger, which (unlike pino) has no level
+const hasLogger = (fastify) => fastify.log.level !== undefined;
+
 const setup = (fastify, options) => {
   // Fastify parses params before hooks run, so they're sanitized by default here
   const baseOptions = {
@@ -27,8 +30,13 @@ const setup = (fastify, options) => {
   const requestLogged = new WeakSet();
   const resolve = (raw) => {
     const debug = raw.debug === undefined ? {} : raw.debug;
-    // Anything else (including an invalid debug option) is left to resolveOptions
-    if (!isPlainObject(debug) || (debug.logger !== undefined && debug.logger !== REQUEST_LOGGER)) {
+    // Anything else (including an invalid debug option) is left to resolveOptions.
+    // The default falls back to console.log when Fastify's logger is off, so debug output isn't swallowed.
+    if (
+      !isPlainObject(debug) ||
+      (debug.logger !== undefined && debug.logger !== REQUEST_LOGGER) ||
+      (debug.logger === undefined && !hasLogger(fastify))
+    ) {
       return resolveOptions(raw);
     }
     const resolved = resolveOptions({ ...raw, debug: { ...debug, logger: fastify.log } });
