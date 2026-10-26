@@ -94,3 +94,10 @@ for (const [name, factory] of versions) {
     await fastify.close();
   });
 }
+
+test('invalid plugin options reject ready() instead of crashing', async () => {
+  const fastify = Fastify();
+  fastify.register(plugin, { patterns: 'x' });
+  await assert.rejects(fastify.ready(), (err) => err.type === 'type_error' && err.message.includes('"patterns"'));
+  await fastify.close();
+});

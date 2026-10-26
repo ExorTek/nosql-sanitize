@@ -3,7 +3,7 @@
 const fp = require('fastify-plugin');
 const { resolveOptions, handleRequest, shouldSkipRoute, log, isPlainObject } = require('@exortek/nosql-sanitize-core');
 
-const fastifyMongoSanitize = (fastify, options, done) => {
+const setup = (fastify, options) => {
   // Fastify parses params before hooks run, so they're sanitized by default here
   const baseOptions = {
     sanitizeObjects: ['body', 'params', 'query'],
@@ -52,6 +52,16 @@ const fastifyMongoSanitize = (fastify, options, done) => {
   }
 
   log(opts.debug, 'info', 'PLUGIN', 'Plugin initialized');
+};
+
+// avvio doesn't catch a synchronous throw from a callback plugin (it crashes the process),
+// so configuration errors go through done() and reject fastify.ready() instead
+const fastifyMongoSanitize = (fastify, options, done) => {
+  try {
+    setup(fastify, options);
+  } catch (err) {
+    return done(err);
+  }
   done();
 };
 
