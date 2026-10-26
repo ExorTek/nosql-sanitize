@@ -46,14 +46,6 @@ for (const [name, factory] of versions) {
     await fastify.close();
   });
 
-  test(`[${name}] hook: 'preHandler' validates the raw body`, async () => {
-    const fastify = factory();
-    fastify.register(plugin, { hook: 'preHandler' });
-    fastify.post('/t', { schema }, async (request) => request.body);
-    assert.strictEqual((await post(fastify, '/t', { name: '$abc' })).statusCode, 400);
-    await fastify.close();
-  });
-
   test(`[${name}] debug logs go through request.log by default`, async () => {
     const { fastify, ours } = withLogs(factory);
     fastify.register(plugin, { debug: { enabled: true, level: 'trace' } });

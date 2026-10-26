@@ -49,8 +49,9 @@ declare namespace fastifyMongoSanitize {
     sanitizeObjects?: string[];
     /**
      * Hook that runs the sanitizer in auto mode. `'preValidation'` sanitizes before
-     * schema validation, so the schema checks the sanitized data.
-     * @default 'preHandler'
+     * schema validation, so the schema checks the sanitized data. `'preHandler'`
+     * runs after validation, so the schema sees the raw input (v3 default).
+     * @default 'preValidation'
      */
     hook?: 'preHandler' | 'preValidation';
     /** Debug logging configuration. */
@@ -64,7 +65,7 @@ declare namespace fastifyMongoSanitize {
    * Fastify plugin for NoSQL injection prevention.
    * Wrapped with `fastify-plugin` — no encapsulation.
    *
-   * Uses the `preHandler` hook in auto mode (see `hook`).
+   * Uses the `preValidation` hook in auto mode (see `hook`).
    *
    * @example
    * ```js

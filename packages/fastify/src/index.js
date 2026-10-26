@@ -10,7 +10,7 @@ const {
   NoSQLSanitizeError,
 } = require('@exortek/nosql-sanitize-core');
 
-// 'preValidation' sanitizes before schema validation, so the schema checks the sanitized data
+// 'preValidation' (default) sanitizes before schema validation, so the schema checks the sanitized data
 const HOOKS = Object.freeze(['preHandler', 'preValidation']);
 
 // debug.logger: 'request' logs through each request's request.log, and through fastify.log outside a request
@@ -63,7 +63,7 @@ const setup = (fastify, options) => {
     });
   }
 
-  const hook = options.hook === undefined ? 'preHandler' : options.hook;
+  const hook = options.hook === undefined ? 'preValidation' : options.hook;
   if (!HOOKS.includes(hook)) throw new NoSQLSanitizeError('Invalid configuration: "hook"', 'type_error');
 
   if (opts.mode === 'auto') {
