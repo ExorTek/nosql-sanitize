@@ -12,6 +12,7 @@
     "test:fastify": "yarn workspace @exortek/fastify-mongo-sanitize run test",
     "test:servers": "node test-servers/run-all-tests.js",
     "test:types": "tsc -p tsconfig.types.json",
+    "test:coverage": "yarn workspaces foreach -A --exclude nosql-sanitize-test-servers run test:coverage",
     "bench": "node --expose-gc benchmarks/index.js",
     "bench:save": "node --expose-gc benchmarks/index.js --save",
     "bench:compare": "node --expose-gc benchmarks/index.js --save --compare",
