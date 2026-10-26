@@ -133,7 +133,10 @@ const shouldSanitizeContentType = (request, contentTypes) => {
 
   // Extract the base MIME type (ignoring charsets/boundaries) and check against the allowed Set
   const mime = helpers.extractMimeType(header);
-  return mime ? contentTypes.has(mime) : true;
+  if (!mime || contentTypes.has(mime)) return true;
+
+  // Structured syntax suffix (RFC 6839): application/vnd.api+json etc. are JSON too
+  return mime.endsWith('+json') && contentTypes.has('application/json');
 };
 
 /**
