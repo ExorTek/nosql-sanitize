@@ -36,6 +36,9 @@ declare namespace noSQLSanitizeCore {
     logSkippedRoutes?: boolean;
   }
 
+  /** What `handleRequest` does when a request contains an injection. */
+  export type OnInjection = 'sanitize' | 'reject' | 'report';
+
   /** What to do with object keys that contain a `.`. */
   export type DotKeysBehavior = 'allow' | 'replace' | 'remove';
 
@@ -109,6 +112,14 @@ declare namespace noSQLSanitizeCore {
     skipRoutes?: (string | RegExp)[];
     /** Custom sanitizer function. Overrides default sanitization. @default null */
     customSanitizer?: ((data: any, options: ResolvedOptions) => any) | null;
+    /**
+     * What to do when a request contains an injection. `'sanitize'` strips it.
+     * `'reject'` throws `NoSQLSanitizeError('injection_detected')` with `statusCode: 400`
+     * (Express and Fastify answer 400). `'report'` is a dry run: changes are reported
+     * through `onSanitize` (required) and the request is left untouched.
+     * @default 'sanitize'
+     */
+    onInjection?: OnInjection;
     /**
      * Callback fired when a value is sanitized, a key is renamed, or a pair is
      * removed. See {@link SanitizeEvent}.
@@ -214,6 +225,7 @@ declare namespace noSQLSanitizeCore {
     mode: 'auto' | 'manual';
     skipRoutes: ResolvedSkipRoutes;
     customSanitizer: ((data: any, options: ResolvedOptions) => any) | null;
+    onInjection: OnInjection;
     onSanitize: ((event: SanitizeEvent) => void) | null;
     recursive: boolean;
     removeEmpty: boolean | 'falsy' | 'empty';
@@ -368,8 +380,11 @@ declare namespace noSQLSanitizeCore {
 
   export class NoSQLSanitizeError extends Error {
     name: 'NoSQLSanitizeError';
+    /** e.g. `'type_error'`, `'max_depth'`, `'injection_detected'`. */
     type: string;
-    constructor(message: string, type?: string);
+    /** HTTP status for client errors (`400` for `'injection_detected'`). */
+    statusCode?: number;
+    constructor(message: string, type?: string, statusCode?: number);
     code(): string;
   }
 

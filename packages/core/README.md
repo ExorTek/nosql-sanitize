@@ -134,6 +134,7 @@ shouldSkipRoute('/login', opts.skipRoutes);    // → false
 | `patterns`                 | `RegExp[]`                          | `[/\$/g, /[ --]/g]` | Non-empty array of `RegExp`s, combined into one regex (flags merged). Override to add custom patterns.                |
 | `customSanitizer`          | `function \| null`                  | `null`              | Replace the built-in sanitizer with your own function.                                                                |
 | `onSanitize`               | `function \| null`                  | `null`              | Audit callback. Fires for value changes, key renames, and removals.                                                   |
+| `onInjection`              | `'sanitize' \| 'reject' \| 'report'` | `'sanitize'`        | `'reject'` throws `injection_detected` (`statusCode` 400); `'report'` only emits `onSanitize` events (required) and leaves the request untouched. |
 | `allowedKeys`              | `string[]`                          | `[]`                | Key whitelist applied at every depth; unlisted keys are removed. Listed keys are still sanitized (`$` stripped).      |
 | `deniedKeys`               | `string[]`                          | `[]`                | Blacklist of keys to remove. With `preserveEmails: true`, a denied key with an email-looking value is kept.           |
 | `allowedOperators`         | `string[]`                          | `[]`                | `$`-operators kept verbatim at every depth (exact match). Values under them are still sanitized.                      |

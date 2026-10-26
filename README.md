@@ -128,6 +128,7 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `customSanitizer`    | `function \| null`     | `null`                                                      | Replace the built-in sanitizer with your own function.                        |
 | `mode`               | `'auto' \| 'manual'`   | `'auto'`                                                    | `'auto'` sanitizes on every request. `'manual'` exposes `req.sanitize()`.     |
 | `onSanitize`         | `function \| null`     | `null`                                                      | Audit callback. See [onSanitize Events](#onsanitize-events).                  |
+| `onInjection`        | `string`               | `'sanitize'`                                                | `'sanitize'`, `'reject'` (400) or `'report'` (dry run). See [Reject or Report](#reject-or-report-instead-of-sanitizing). |
 | `debug.enabled`      | `boolean`              | `false`                                                     | Enable detailed logging for debugging.                                        |
 
 ### String Options
@@ -313,6 +314,23 @@ app.use(mongoSanitize());
 Fastify parses query strings into objects with a null prototype. The sanitizer handles these correctly, so Fastify query objects are sanitized just like regular plain objects.
 
 ## 🛠 Advanced Usage
+
+### Reject or Report Instead of Sanitizing
+
+By default an injection is stripped and the request continues. `onInjection` changes that:
+
+```js
+// Answer 400 instead of silently cleaning the payload
+app.use(mongoSanitize({ onInjection: 'reject' }));
+
+// Dry run for a safe rollout: log what would change, leave requests untouched
+app.use(mongoSanitize({
+  onInjection: 'report',
+  onSanitize: (event) => logger.warn({ event }, 'nosql-sanitize would change this'),
+}));
+```
+
+`'reject'` throws `NoSQLSanitizeError` with `type: 'injection_detected'` and `statusCode: 400`, which Express and Fastify turn into a 400 response (customize it in your error handler). It uses the same rules as [`hasInjection`](#outside-http-graphql-websockets-queues). Requests without an injection are still sanitized as configured. `'report'` requires `onSanitize`.
 
 ### Manual Mode
 
