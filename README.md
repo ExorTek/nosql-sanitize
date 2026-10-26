@@ -123,7 +123,7 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `deniedKeys`         | `string[]`             | `[]`                                                        | Keys to completely remove from the input.                                     |
 | `allowedOperators`   | `string[]`             | `[]`                                                        | `$`-operators kept verbatim (e.g. `['$set']`). See [Allowing / Denying Specific Keys](#allowing--denying-specific-keys). |
 | `dotKeys`            | `string`               | `'allow'`                                                   | Keys containing `.`: `'allow'`, `'replace'` (with `replaceWith`) or `'remove'`. |
-| `removeEmpty`        | `boolean`              | `false`                                                     | Remove keys whose value is **falsy** after sanitization (`''`, `null`, `0`, `false`). |
+| `removeEmpty`        | `boolean \| 'falsy' \| 'empty'` | `false`                                           | `true` / `'falsy'`: remove keys whose value is **falsy** after sanitization (`''`, `null`, `0`, `false`). `'empty'`: keep `0` / `false`, remove `''`, `null`, `{}`, `[]`. |
 | `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Non-empty array of `RegExp`s (flags are merged). Override to add custom patterns. |
 | `customSanitizer`    | `function \| null`     | `null`                                                      | Replace the built-in sanitizer with your own function.                        |
 | `mode`               | `'auto' \| 'manual'`   | `'auto'`                                                    | `'auto'` sanitizes on every request. `'manual'` exposes `req.sanitize()`.     |
@@ -151,7 +151,8 @@ Control how arrays are post-processed after sanitization:
 ```js
 app.use(mongoSanitize({
   arrayOptions: {
-    filterNull: true,    // Remove falsy values (null, undefined, 0, '', false) from arrays
+    filterNull: true,    // Remove falsy values (null, undefined, 0, '', false) from arrays;
+                         // use 'nullish' to remove only null and undefined
     distinct: true,      // Remove duplicate values from arrays
   }
 }));

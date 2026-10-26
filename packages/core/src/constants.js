@@ -51,6 +51,8 @@ const DEFAULT_OPTIONS = deepFreeze({
   customSanitizer: null,
   onSanitize: null,
   recursive: true,
+  // true / 'falsy' → drop falsy values ('', null, undefined, 0, false)
+  // 'empty'        → drop '', null, undefined, {} and [] only
   removeEmpty: false,
   maxDepth: null,
   // What to do with values nested deeper than `maxDepth`.
@@ -82,6 +84,7 @@ const DEFAULT_OPTIONS = deepFreeze({
     maxLength: null,
   },
   arrayOptions: {
+    // true / 'falsy' → drop falsy items; 'nullish' → drop null and undefined only
     filterNull: false,
     distinct: false,
   },

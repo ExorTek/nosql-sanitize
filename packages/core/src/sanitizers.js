@@ -1,6 +1,6 @@
 'use strict';
 
-const { isString, isArray, isPlainObject, isPrimitive, isDate, isEmail, log } = require('./helpers');
+const { isString, isArray, isPlainObject, isPrimitive, isDate, isEmail, isEmptyValue, log } = require('./helpers');
 const { NoSQLSanitizeError } = require('./errors');
 const { DANGEROUS_KEYS, HARD_MAX_DEPTH } = require('./constants');
 
@@ -91,7 +91,9 @@ const sanitizeArray = (arr, options, depth, path = '') => {
 
   let out = result;
   if (removed) out = out.filter((x) => x !== REMOVE);
-  if (arrayOptions.filterNull) out = out.filter(Boolean);
+  // true / 'falsy' drop every falsy item; 'nullish' only null and undefined
+  if (arrayOptions.filterNull === 'nullish') out = out.filter((x) => x != null);
+  else if (arrayOptions.filterNull) out = out.filter(Boolean);
   if (arrayOptions.distinct) out = [...new Set(out)];
   return out;
 };
@@ -207,7 +209,8 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    if (removeEmpty && !sanitizedValue) {
+    // true / 'falsy' drop every falsy value; 'empty' keeps 0 and false
+    if (removeEmpty && (removeEmpty === 'empty' ? isEmptyValue(sanitizedValue) : !sanitizedValue)) {
       if (auditing) emitRemoved(onSanitize, 'removeEmpty', key, keyPath(path, sanitizedKey), val, sanitizedKey);
       continue;
     }
