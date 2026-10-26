@@ -13,7 +13,10 @@ declare namespace noSQLSanitizeCore {
   }
 
   export interface ArrayOptions {
-    /** Remove falsy values from arrays. @default false */
+    /**
+     * Remove **falsy** values from arrays (`null`, `undefined`, `0`, `''`, `false`),
+     * not only `null`. @default false
+     */
     filterNull?: boolean;
     /** Remove duplicate values from arrays. @default false */
     distinct?: boolean;
@@ -79,8 +82,9 @@ declare namespace noSQLSanitizeCore {
     sanitizeObjects?: string[];
     /**
      * Only sanitize request body for these content types.
-     * Set to `null` to sanitize all content types.
-     * Query/params are always sanitized regardless.
+     * Set to `null` to sanitize all content types. Bodies with any other content
+     * type (e.g. `multipart/form-data`, `application/vnd.api+json`) pass through
+     * unsanitized. Query/params are always sanitized regardless.
      * @default ['application/json', 'application/x-www-form-urlencoded']
      */
     contentTypes?: string[] | null;
@@ -102,7 +106,11 @@ declare namespace noSQLSanitizeCore {
     onSanitize?: ((event: SanitizeEvent) => void) | null;
     /** Recursively sanitize nested objects/arrays. @default true */
     recursive?: boolean;
-    /** Remove falsy values after sanitization. @default false */
+    /**
+     * Remove keys whose value is **falsy** after sanitization (`''`, `null`,
+     * `undefined`, `0`, `false`), and keys that sanitize to an empty string.
+     * @default false
+     */
     removeEmpty?: boolean;
     /**
      * Maximum recursion depth for nested objects.
@@ -137,9 +145,18 @@ declare namespace noSQLSanitizeCore {
      * @default [/\$/g, /control chars/g]
      */
     patterns?: RegExp[];
-    /** Only allow these keys (empty = allow all). @default [] */
+    /**
+     * Key whitelist (empty = allow all). Applied at **every depth**: any key not
+     * listed is removed. Listed keys are still sanitized (`$` is stripped), so
+     * this does not permit MongoDB operators.
+     * @default []
+     */
     allowedKeys?: string[];
-    /** Remove these keys (empty = deny none). @default [] */
+    /**
+     * Remove these keys (empty = deny none). Note: with `preserveEmails: true`
+     * a denied key whose value looks like an email is kept.
+     * @default []
+     */
     deniedKeys?: string[];
     /** String transform options. */
     stringOptions?: StringOptions;

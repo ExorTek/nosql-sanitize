@@ -119,9 +119,9 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `maxDepthBehavior`   | `string`               | `'preserve'`                                                | Action when `maxDepth` exceeded. See [Depth Limiting](#depth-limiting).       |
 | `preserveEmails`     | `boolean`              | `true`                                                      | Preserve email-looking values. See [Email Preservation](#email-preservation). |
 | `allowPrototypeKeys` | `boolean`              | `false`                                                     | Allow `__proto__` / `constructor` / `prototype` keys.                         |
-| `allowedKeys`        | `string[]`             | `[]`                                                        | Keys to allow without sanitization (e.g., `['$set']`).                        |
+| `allowedKeys`        | `string[]`             | `[]`                                                        | Key whitelist, applied at every depth. See [Allowing / Denying Specific Keys](#allowing--denying-specific-keys). |
 | `deniedKeys`         | `string[]`             | `[]`                                                        | Keys to completely remove from the input.                                     |
-| `removeEmpty`        | `boolean`              | `false`                                                     | Remove keys with empty/falsy values after sanitization.                       |
+| `removeEmpty`        | `boolean`              | `false`                                                     | Remove keys whose value is **falsy** after sanitization (`''`, `null`, `0`, `false`). |
 | `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Non-empty array of `RegExp`s (flags are merged). Override to add custom patterns. |
 | `customSanitizer`    | `function \| null`     | `null`                                                      | Replace the built-in sanitizer with your own function.                        |
 | `mode`               | `'auto' \| 'manual'`   | `'auto'`                                                    | `'auto'` sanitizes on every request. `'manual'` exposes `req.sanitize()`.     |
@@ -231,6 +231,8 @@ Setting `maxDepth: 0` is valid and means "only sanitize top-level string values"
 By default, values that look like email addresses (e.g., `user@example.com`) are passed through without sanitization. This prevents the `@` or other characters from being accidentally stripped.
 
 > **Important**: When `preserveEmails: true`, the email bypass also skips any custom `patterns` you provide. If you add custom patterns that must apply to email values, set `preserveEmails: false`.
+>
+> It also takes precedence over `deniedKeys`: a denied key whose value looks like an email is kept. Set `preserveEmails: false` if denied keys must always be removed.
 
 ```js
 // Custom patterns that must also apply to emails
@@ -242,17 +244,45 @@ app.use(mongoSanitize({
 
 ### Content-Type Guard
 
-Only `application/json` and `application/x-www-form-urlencoded` request bodies are sanitized by default. This prevents corrupting binary uploads, multipart forms, or other non-JSON payloads. The `query` object is always sanitized.
+Only `application/json` and `application/x-www-form-urlencoded` request bodies are sanitized by default. The match is on the exact MIME type, and the `query` object is always sanitized.
+
+> **Warning**: bodies with any other content type are passed through **unsanitized**. That includes `multipart/form-data` and `+json` types such as `application/vnd.api+json` or `application/merge-patch+json`. Body parsers like multer/busboy turn multipart fields such as `user[$ne]=x` into `{ user: { $ne: 'x' } }`, so a multipart route is just as injectable as a JSON one. If you parse any of these types, add them to `contentTypes`. Sanitization only touches the parsed plain-object body, never file streams or buffers.
 
 ```js
-// Add GraphQL support
+// Also sanitize multipart forms and JSON:API bodies
 app.use(mongoSanitize({
-  contentTypes: ['application/json', 'application/graphql'],
+  contentTypes: [
+    'application/json',
+    'application/x-www-form-urlencoded',
+    'multipart/form-data',
+    'application/vnd.api+json',
+  ],
 }));
 
 // Sanitize all content types (use with caution)
 app.use(mongoSanitize({ contentTypes: null }));
 ```
+
+### Production Hardening
+
+The defaults favor backward compatibility. For production, we recommend:
+
+```js
+app.use(mongoSanitize({
+  maxDepth: 32,               // bound recursion…
+  maxDepthBehavior: 'remove', // …and drop over-depth data instead of passing it through raw
+  contentTypes: [            // cover every body type you actually parse
+    'application/json',
+    'application/x-www-form-urlencoded',
+    'multipart/form-data',
+  ],
+}));
+```
+
+- **Validate schemas as well.** This library strips operator characters; it does not check types. `{ "age": { "gt": 1 } }` survives sanitization as an object, so cast or validate (Joi, Zod, Fastify JSON schema, Mongoose casting, `sanitizeFilter`) before querying.
+- **Watch dotted keys.** Keys like `profile.isAdmin` are not modified. Never spread request bodies straight into `$set`.
+- **Anchor `skipRoutes` regexes** (`/^\/health$/`, not `/health/`). Otherwise they match anywhere in the path.
+- **`deniedKeys` and emails**: with `preserveEmails: true` (default), a denied key whose value looks like an email is **kept**. Set `preserveEmails: false` if a denied key must always be dropped.
 
 ### Custom Patterns
 
@@ -319,6 +349,8 @@ app.get('/user/:username', (req, res) => {
 });
 ```
 
+> Adding `'params'` to `sanitizeObjects` has no effect in Express. App-level middleware runs before routing, so `req.params` is still empty at that point.
+
 ### Skipping Specific Routes
 
 ```js
@@ -330,6 +362,8 @@ app.use(mongoSanitize({
   ]
 }));
 ```
+
+Regex entries are tested against the whole cleaned path and are **not anchored automatically**, so `/health/` would also skip `/api/users/health`. Always anchor with `^` (and `$` where appropriate).
 
 ### Custom Sanitizer
 
@@ -348,10 +382,12 @@ app.use(mongoSanitize({
 
 ### Allowing / Denying Specific Keys
 
+`allowedKeys` is a **whitelist**. When it's non-empty, any key not listed is removed **at every depth** of the payload. Listed keys are still sanitized like any other key, so `$` is stripped from them. It does **not** let MongoDB operators through.
+
 ```js
-// Allow specific MongoDB operators (e.g., for admin APIs)
+// Only these keys survive, at any nesting level
 app.use(mongoSanitize({
-  allowedKeys: ['$set', '$push', '$pull']
+  allowedKeys: ['name', 'email', 'address', 'city']
 }));
 
 // Deny specific keys (removed from input entirely)
