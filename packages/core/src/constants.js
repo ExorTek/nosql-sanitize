@@ -32,7 +32,16 @@ const LOG_COLORS = Object.freeze({
   reset: '\x1b[0m',
 });
 
-const DEFAULT_OPTIONS = Object.freeze({
+// Freezes nested plain objects and arrays. RegExps are left alone: freezing one
+// makes `lastIndex` read-only and breaks global-flag matching.
+const deepFreeze = (obj) => {
+  for (const value of Object.values(obj)) {
+    if (value !== null && typeof value === 'object' && !(value instanceof RegExp)) deepFreeze(value);
+  }
+  return Object.freeze(obj);
+};
+
+const DEFAULT_OPTIONS = deepFreeze({
   replaceWith: '',
   removeMatches: false,
   sanitizeObjects: ['body', 'query'],

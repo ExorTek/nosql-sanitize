@@ -37,6 +37,8 @@ const resolveOptions = (userOptions = {}) => {
   const opts = {
     ...DEFAULT_OPTIONS,
     ...userOptions,
+    // Copy so callers can't mutate the frozen defaults (or each other's options)
+    sanitizeObjects: [...(userOptions.sanitizeObjects || DEFAULT_OPTIONS.sanitizeObjects)],
     stringOptions: { ...DEFAULT_OPTIONS.stringOptions, ...(userOptions.stringOptions || {}) },
     arrayOptions: { ...DEFAULT_OPTIONS.arrayOptions, ...(userOptions.arrayOptions || {}) },
     debug: { ...DEFAULT_OPTIONS.debug, ...(userOptions.debug || {}) },
