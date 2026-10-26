@@ -108,6 +108,8 @@ const validators = Object.freeze({
   allowPrototypeKeys: isBoolean,
   patterns: (v) => isArray(v) && v.length > 0 && v.every((p) => p instanceof RegExp),
   allowedKeys: (v) => v === null || isArray(v),
+  allowedOperators: (v) =>
+    v === null || (isArray(v) && v.every((op) => isString(op) && op.length > 1 && op[0] === '$')),
   deniedKeys: (v) => v === null || isArray(v),
   stringOptions: isPlainObject,
   arrayOptions: isPlainObject,

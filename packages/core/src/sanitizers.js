@@ -99,6 +99,7 @@ const sanitizeObject = (obj, options, depth, path = '') => {
   const {
     removeEmpty,
     allowedKeys,
+    allowedOperators,
     deniedKeys,
     removeMatches,
     allowPrototypeKeys,
@@ -135,7 +136,10 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    if (allowedKeys.size && !allowedKeys.has(key)) {
+    // Allowed operators skip the whitelist and key sanitization; their values are still sanitized
+    const isOperator = allowedOperators.size !== 0 && allowedOperators.has(key);
+
+    if (!isOperator && allowedKeys.size && !allowedKeys.has(key)) {
       if (auditing)
         onSanitize({
           type: 'removed',
@@ -149,7 +153,7 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    const sanitizedKey = sanitizeString(key, options);
+    const sanitizedKey = isOperator ? key : sanitizeString(key, options);
 
     if (!allowPrototypeKeys && DANGEROUS_KEYS.has(sanitizedKey)) {
       if (auditing)
@@ -166,7 +170,7 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       continue;
     }
 
-    if (removeMatches) {
+    if (removeMatches && !isOperator) {
       _combinedPattern.lastIndex = 0;
       if (_combinedPattern.test(key)) {
         if (auditing)

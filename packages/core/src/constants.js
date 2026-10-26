@@ -67,6 +67,9 @@ const DEFAULT_OPTIONS = deepFreeze({
   allowPrototypeKeys: false,
   patterns: PATTERNS,
   allowedKeys: [],
+  // `$`-keys kept verbatim at every depth (e.g. ['$set'] for an admin update API).
+  // Their values are still sanitized.
+  allowedOperators: [],
   deniedKeys: [],
   stringOptions: {
     trim: false,
