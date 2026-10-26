@@ -5,6 +5,8 @@ const { NoSQLSanitizeError } = require('./errors');
 const { sanitizeString, sanitizeArray, sanitizeObject, sanitizeValue, REMOVE } = require('./sanitizers');
 const helpers = require('./helpers');
 
+const NESTED_OPTIONS = Object.freeze(['stringOptions', 'arrayOptions', 'debug']);
+
 // An option set to undefined means "use the default", same as leaving it out
 const withoutUndefined = (obj) => {
   const out = {};
@@ -30,26 +32,21 @@ const resolveOptions = (rawOptions = {}) => {
   }
   const userOptions = withoutUndefined(rawOptions);
 
-  // Validate nested object types before merge to avoid corrupting the configuration structure
-  if (userOptions.debug !== undefined && !helpers.isPlainObject(userOptions.debug)) {
-    throw new NoSQLSanitizeError('Invalid configuration: "debug"', 'type_error');
-  }
-  if (userOptions.stringOptions !== undefined && !helpers.isPlainObject(userOptions.stringOptions)) {
-    throw new NoSQLSanitizeError('Invalid configuration: "stringOptions"', 'type_error');
-  }
-  if (userOptions.arrayOptions !== undefined && !helpers.isPlainObject(userOptions.arrayOptions)) {
-    throw new NoSQLSanitizeError('Invalid configuration: "arrayOptions"', 'type_error');
-  }
-
-  // Deep merge default options with user-provided options safely
   const opts = {
     ...DEFAULT_OPTIONS,
     ...userOptions,
     sanitizeObjects: userOptions.sanitizeObjects || DEFAULT_OPTIONS.sanitizeObjects,
-    stringOptions: { ...DEFAULT_OPTIONS.stringOptions, ...withoutUndefined(userOptions.stringOptions || {}) },
-    arrayOptions: { ...DEFAULT_OPTIONS.arrayOptions, ...withoutUndefined(userOptions.arrayOptions || {}) },
-    debug: { ...DEFAULT_OPTIONS.debug, ...withoutUndefined(userOptions.debug || {}) },
   };
+
+  // Nested objects are checked before their merge: spreading a string or array into the
+  // defaults would hide the mistake from validateOptions
+  for (const key of NESTED_OPTIONS) {
+    const nested = userOptions[key];
+    if (nested !== undefined && !helpers.isPlainObject(nested)) {
+      throw new NoSQLSanitizeError(`Invalid configuration: "${key}"`, 'type_error');
+    }
+    opts[key] = { ...DEFAULT_OPTIONS[key], ...withoutUndefined(nested || {}) };
+  }
 
   helpers.validateOptions(opts);
 
@@ -59,7 +56,7 @@ const resolveOptions = (rawOptions = {}) => {
 
   // Pre-compile combined pattern (just once) for performance optimization during runtime.
   // Flags of all patterns are merged (sticky dropped, global forced) so e.g. /where/i keeps matching WHERE.
-  const patterns = opts.patterns || PATTERNS;
+  const { patterns } = opts;
   const flags = new Set(['g']);
   for (const p of patterns) for (const f of p.flags) if (f !== 'y') flags.add(f);
   try {
@@ -70,11 +67,10 @@ const resolveOptions = (rawOptions = {}) => {
 
   // Parse skipRoutes: Separate exact string matches (converted to a Set for O(1) lookup)
   // and RegExp patterns (kept in an array) for faster evaluation later
-  const rawSkipRoutes = userOptions.skipRoutes || [];
   const exactSkipRoutes = new Set();
   const regexSkipRoutes = [];
 
-  for (const route of rawSkipRoutes) {
+  for (const route of opts.skipRoutes) {
     if (route instanceof RegExp) {
       regexSkipRoutes.push(route);
     } else if (helpers.isString(route)) {
@@ -87,21 +83,13 @@ const resolveOptions = (rawOptions = {}) => {
 
   // Normalize contentTypes to a Set of lowercase strings for case-insensitive O(1) lookups.
   // A null value indicates that content-type checking should be bypassed entirely.
-  const rawContentTypes =
-    userOptions.contentTypes !== undefined ? userOptions.contentTypes : DEFAULT_OPTIONS.contentTypes;
-  opts.contentTypes = rawContentTypes === null ? null : new Set(rawContentTypes.map((ct) => ct.toLowerCase()));
+  opts.contentTypes = opts.contentTypes === null ? null : new Set(opts.contentTypes.map((ct) => ct.toLowerCase()));
 
   // Convert allowed and denied keys to Sets for faster inclusion checks
-  opts.allowedKeys = new Set(userOptions.allowedKeys || []);
-  opts.allowedOperators = new Set(userOptions.allowedOperators || []);
-  opts.deniedKeys = new Set(userOptions.deniedKeys || []);
-
-  // Set max depth constraint for nested object parsing to prevent stack overflow/ReDoS attacks.
-  // Data deeper than this is handled per `maxDepthBehavior` (default 'preserve': passed through unsanitized).
-  opts.maxDepth = userOptions.maxDepth !== undefined ? userOptions.maxDepth : null;
-
-  // Assign the optional custom callback for post-sanitization hooks
-  opts.onSanitize = userOptions.onSanitize || null;
+  // (null is accepted for these lists and means "none")
+  opts.allowedKeys = new Set(opts.allowedKeys || []);
+  opts.allowedOperators = new Set(opts.allowedOperators || []);
+  opts.deniedKeys = new Set(opts.deniedKeys || []);
 
   return opts;
 };
