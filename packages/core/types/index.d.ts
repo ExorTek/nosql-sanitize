@@ -43,7 +43,7 @@ declare namespace noSQLSanitizeCore {
 
   /** Why a key/value pair was removed (only present when `type === 'removed'`). */
   export type SanitizeRemoveReason =
-    'deniedKey' | 'notAllowed' | 'prototypePollution' | 'removeMatches' | 'removeEmpty' | 'maxDepth';
+    'deniedKey' | 'notAllowed' | 'prototypePollution' | 'removeMatches' | 'removeEmpty' | 'maxDepth' | 'circular';
 
   /**
    * Event passed to the `onSanitize` callback.

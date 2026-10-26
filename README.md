@@ -172,7 +172,7 @@ app.use(mongoSanitize({
 | Field            | Description                                                                                                                   |
 |:-----------------|:------------------------------------------------------------------------------------------------------------------------------|
 | `type`           | `'value'`, `'key'`, `'both'`, or `'removed'`                                                                                  |
-| `reason`         | Only for `'removed'`: `'deniedKey'`, `'notAllowed'`, `'prototypePollution'`, `'removeMatches'`, `'removeEmpty'`, `'maxDepth'` |
+| `reason`         | Only for `'removed'`: `'deniedKey'`, `'notAllowed'`, `'prototypePollution'`, `'removeMatches'`, `'removeEmpty'`, `'maxDepth'`, `'circular'` |
 | `key`            | Original key (e.g., `'$gt'`)                                                                                                  |
 | `sanitizedKey`   | Key after sanitization (e.g., `'gt'`)                                                                                         |
 | `path`           | Full dotted path (e.g., `'body.user.$gt'`)                                                                                    |
