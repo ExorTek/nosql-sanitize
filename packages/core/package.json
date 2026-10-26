@@ -7,9 +7,9 @@
   "type": "commonjs",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "import": "./src/index.js",
-      "require": "./src/index.js",
-      "types": "./types/index.d.ts"
+      "require": "./src/index.js"
     }
   },
   "scripts": {
