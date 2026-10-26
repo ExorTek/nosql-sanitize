@@ -17,6 +17,21 @@ npm install @exortek/nosql-sanitize-core
 
 ## 🚀 API Reference
 
+### `sanitize(value, options?)` / `hasInjection(value, options?)`
+
+Standalone helpers for data that doesn't come through an HTTP request (GraphQL arguments, WebSocket messages, queue payloads). Both accept user options or options from `resolveOptions()`. A user options object is resolved once and cached, so don't mutate it after the first call.
+
+```js
+const { sanitize, hasInjection } = require('@exortek/nosql-sanitize-core');
+
+sanitize({ user: { $ne: 'x' } });       // → { user: { ne: 'x' } }
+hasInjection({ user: { $ne: 'x' } });   // → true
+hasInjection({ name: 'ada' });          // → false
+```
+
+- `sanitize` runs the built-in sanitizer (`customSanitizer` is ignored), never mutates its input, and returns an empty object/array if the root itself is dropped.
+- `hasInjection` returns `true` when sanitizing would neutralize an injection: a key or string matching `patterns` (emails are exempt with `preserveEmails`), a prototype key, or a dotted key while `dotKeys` isn't `'allow'`. Keys dropped by `deniedKeys` / `allowedKeys` and `allowedOperators` don't count. It scans every depth, regardless of `maxDepth` and `recursive`, and throws `max_depth` past 256 levels.
+
 ### `sanitizeValue(value, options, isValue?, depth?, path?)`
 
 The main entry point for sanitization. It intelligently dispatches to specialized sanitizers based on the data type.
