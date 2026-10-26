@@ -41,7 +41,12 @@ const fastifyMongoSanitize = (fastify, options, done) => {
       if (shouldSkipRoute(request.url, opts.skipRoutes, opts.debug)) {
         return done();
       }
-      handleRequest(request, opts);
+      // onInjection: 'reject' and maxDepthBehavior: 'throw' throw; hand the error to Fastify
+      try {
+        handleRequest(request, opts);
+      } catch (err) {
+        return done(err);
+      }
       done();
     });
   }

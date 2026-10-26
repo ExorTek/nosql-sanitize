@@ -109,6 +109,11 @@ const resolveOptions = (rawOptions = {}) => {
   opts.allowedOperators = new Set(opts.allowedOperators || []);
   opts.deniedKeys = new Set(opts.deniedKeys || []);
 
+  // Report mode only produces onSanitize events, so without a callback it would do nothing
+  if (opts.onInjection === 'report' && !opts.onSanitize) {
+    throw new NoSQLSanitizeError('Invalid configuration: "onInjection" \'report\' requires onSanitize', 'type_error');
+  }
+
   return opts;
 };
 
@@ -182,7 +187,7 @@ const shouldSanitizeContentType = (request, contentTypes) => {
  * @param {Array.<string>} [options.contentTypes] - Allowed content types that determine whether the `body` field is sanitized.
  */
 const handleRequest = (request, options) => {
-  const { sanitizeObjects, customSanitizer, debug, contentTypes } = options;
+  const { sanitizeObjects, customSanitizer, debug, contentTypes, onInjection } = options;
   // Gate all debug work on a single check so the hot path (debug off) pays
   // nothing — no timing closure allocation, no per-field template strings.
   const debugOn = debug?.enabled === true;
@@ -210,6 +215,16 @@ const handleRequest = (request, options) => {
 
     if (debugOn) helpers.log(debug, 'debug', 'REQUEST', `Sanitizing '${field}'`);
 
+    if (onInjection === 'reject' && containsInjection(data, options)) {
+      throw new NoSQLSanitizeError(`NoSQL injection detected in "${field}"`, 'injection_detected', 400);
+    }
+
+    // Dry run: the built-in sanitizer emits the onSanitize events, the request keeps its raw data
+    if (onInjection === 'report') {
+      sanitizeValue(data, options, false, 0, field);
+      continue;
+    }
+
     let sanitized;
     if (customSanitizer) {
       // A shallow clone protects the caller's original object from an external
@@ -219,7 +234,7 @@ const handleRequest = (request, options) => {
     } else {
       // The built-in sanitizer always writes into a fresh object/array and never
       // mutates its input, so no top-level clone is needed here. The field name
-      // seeds the onSanitize path (e.g. "body.user.$gt").
+      // seeds the onSanitize path (e.g. "body.user.gt").
       sanitized = sanitizeValue(data, options, false, 0, field);
     }
 
