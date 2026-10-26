@@ -11,6 +11,7 @@
     "test:express": "yarn workspace @exortek/express-mongo-sanitize run test",
     "test:fastify": "yarn workspace @exortek/fastify-mongo-sanitize run test",
     "test:servers": "node test-servers/run-all-tests.js",
+    "test:types": "tsc -p tsconfig.types.json",
     "bench": "node --expose-gc benchmarks/index.js",
     "bench:save": "node --expose-gc benchmarks/index.js --save",
     "bench:compare": "node --expose-gc benchmarks/index.js --save --compare",
@@ -22,7 +23,7 @@
     "changeset:version": "changeset version",
     "format": "prettier --write \"**/**/*.{js,ts,json}\"",
     "format:check": "prettier --check \"**/**/*.{js,ts,json}\"",
-    "verify": "yarn format:check && yarn test && yarn test:servers"
+    "verify": "yarn format:check && yarn test && yarn test:types && yarn test:servers"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
@@ -31,7 +32,8 @@
     "express4": "npm:express@4.22.2",
     "fastify": "^5.12.7",
     "fastify4": "npm:fastify@4.29.1",
-    "prettier": "^3.9.10"
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3"
   },
   "packageManager": "yarn@4.17.0",
   "engines": {
