@@ -17,8 +17,21 @@ const fastifyMongoSanitize = (fastify, options, done) => {
   });
 
   if (opts.mode === 'manual') {
+    // request.sanitize(customOpts) runs per request, so resolve each options object only once.
+    // Options objects are treated as immutable: pass a new object to change them.
+    const customCache = new WeakMap();
+    const resolveCustom = (customOpts) => {
+      if (typeof customOpts !== 'object') return resolveOptions({ ...baseOptions, ...customOpts });
+      let resolved = customCache.get(customOpts);
+      if (!resolved) {
+        resolved = resolveOptions({ ...baseOptions, ...customOpts });
+        customCache.set(customOpts, resolved);
+      }
+      return resolved;
+    };
+
     fastify.decorateRequest('sanitize', function (customOpts = {}) {
-      const finalOpts = Object.keys(customOpts).length ? resolveOptions({ ...baseOptions, ...customOpts }) : opts;
+      const finalOpts = Object.keys(customOpts).length ? resolveCustom(customOpts) : opts;
       handleRequest(this, finalOpts);
     });
   }
