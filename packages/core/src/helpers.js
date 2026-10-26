@@ -62,6 +62,15 @@ const extractMimeType = (contentType) => {
   return mime || null;
 };
 
+// Logging must never throw: circular structures and BigInts break JSON.stringify
+const safeStringify = (data) => {
+  try {
+    return JSON.stringify(data, null, 2);
+  } catch {
+    return '[unserializable]';
+  }
+};
+
 const log = (debugOpts, level, context, message, data = null) => {
   if (!debugOpts?.enabled || LOG_LEVELS[debugOpts.level || 'silent'] < LOG_LEVELS[level]) return;
 
@@ -72,7 +81,7 @@ const log = (debugOpts, level, context, message, data = null) => {
 
   if (data !== null && typeof data === 'object') {
     console.log(logMessage);
-    console.log(`${color}Data:${reset}`, JSON.stringify(data, null, 2));
+    console.log(`${color}Data:${reset}`, safeStringify(data));
   } else if (data !== null) {
     console.log(logMessage, data);
   } else {
