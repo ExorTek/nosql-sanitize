@@ -76,7 +76,7 @@ const resolveOptions = (userOptions = {}) => {
   opts.deniedKeys = new Set(userOptions.deniedKeys || []);
 
   // Set max depth constraint for nested object parsing to prevent stack overflow/ReDoS attacks.
-  // Data deeper than this is handled per `maxDepthBehavior` (default: removed, never passed through raw).
+  // Data deeper than this is handled per `maxDepthBehavior` (default 'preserve': passed through unsanitized).
   opts.maxDepth = userOptions.maxDepth !== undefined ? userOptions.maxDepth : null;
 
   // Assign the optional custom callback for post-sanitization hooks
