@@ -122,7 +122,7 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `allowedKeys`        | `string[]`             | `[]`                                                        | Keys to allow without sanitization (e.g., `['$set']`).                        |
 | `deniedKeys`         | `string[]`             | `[]`                                                        | Keys to completely remove from the input.                                     |
 | `removeEmpty`        | `boolean`              | `false`                                                     | Remove keys with empty/falsy values after sanitization.                       |
-| `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Regex patterns to match. Override to add custom patterns.                     |
+| `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Non-empty array of `RegExp`s (flags are merged). Override to add custom patterns. |
 | `customSanitizer`    | `function \| null`     | `null`                                                      | Replace the built-in sanitizer with your own function.                        |
 | `mode`               | `'auto' \| 'manual'`   | `'auto'`                                                    | `'auto'` sanitizes on every request. `'manual'` exposes `req.sanitize()`.     |
 | `onSanitize`         | `function \| null`     | `null`                                                      | Audit callback. See [onSanitize Events](#onsanitize-events).                  |

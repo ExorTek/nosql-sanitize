@@ -130,7 +130,11 @@ declare namespace noSQLSanitizeCore {
      * @default false
      */
     allowPrototypeKeys?: boolean;
-    /** Regex patterns to match and replace. @default [/\$/g, /control chars/g] */
+    /**
+     * Regex patterns to match and replace. Must be a non-empty array of RegExps;
+     * they are combined into one regex with their flags merged (`g` forced, `y` dropped).
+     * @default [/\$/g, /control chars/g]
+     */
     patterns?: RegExp[];
     /** Only allow these keys (empty = allow all). @default [] */
     allowedKeys?: string[];

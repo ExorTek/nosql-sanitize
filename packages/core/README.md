@@ -116,7 +116,7 @@ shouldSkipRoute('/login', opts.skipRoutes);    // → false
 | `allowPrototypeKeys`      | `boolean`                           | `false`             | Allow `__proto__`, `constructor`, `prototype` keys through.                                                          |
 | `recursive`               | `boolean`                           | `true`              | Whether to recursively sanitize nested objects/arrays.                                                               |
 | `removeEmpty`             | `boolean`                           | `false`             | Remove keys with empty/falsy values after sanitization.                                                              |
-| `patterns`                | `RegExp[]`                          | `[/\$/g, /[ --]/g]` | Regex patterns to match. Override to add custom patterns.                                                            |
+| `patterns`                | `RegExp[]`                          | `[/\$/g, /[ --]/g]` | Non-empty array of `RegExp`s, combined into one regex (flags merged). Override to add custom patterns.               |
 | `customSanitizer`         | `function \| null`                  | `null`              | Replace the built-in sanitizer with your own function.                                                               |
 | `onSanitize`              | `function \| null`                  | `null`              | Audit callback. Fires for value changes, key renames, and removals.                                                  |
 | `allowedKeys`             | `string[]`                          | `[]`                | Whitelist of keys to allow without sanitization.                                                                     |

@@ -106,7 +106,7 @@ const validators = Object.freeze({
   maxDepthBehavior: (v) => ['preserve', 'remove', 'throw'].includes(v),
   preserveEmails: isBoolean,
   allowPrototypeKeys: isBoolean,
-  patterns: isArray,
+  patterns: (v) => isArray(v) && v.length > 0 && v.every((p) => p instanceof RegExp),
   allowedKeys: (v) => v === null || isArray(v),
   deniedKeys: (v) => v === null || isArray(v),
   stringOptions: isPlainObject,
