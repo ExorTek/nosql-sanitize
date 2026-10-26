@@ -263,6 +263,27 @@ app.use(mongoSanitize({
 app.use(mongoSanitize({ contentTypes: null }));
 ```
 
+### Production Hardening
+
+The defaults favor backward compatibility. For production, we recommend:
+
+```js
+app.use(mongoSanitize({
+  maxDepth: 32,               // bound recursion…
+  maxDepthBehavior: 'remove', // …and drop over-depth data instead of passing it through raw
+  contentTypes: [            // cover every body type you actually parse
+    'application/json',
+    'application/x-www-form-urlencoded',
+    'multipart/form-data',
+  ],
+}));
+```
+
+- **Validate schemas as well.** This library strips operator characters; it does not check types. `{ "age": { "gt": 1 } }` survives sanitization as an object, so cast or validate (Joi, Zod, Fastify JSON schema, Mongoose casting, `sanitizeFilter`) before querying.
+- **Watch dotted keys.** Keys like `profile.isAdmin` are not modified. Never spread request bodies straight into `$set`.
+- **Anchor `skipRoutes` regexes** (`/^\/health$/`, not `/health/`). Otherwise they match anywhere in the path.
+- **`deniedKeys` and emails**: with `preserveEmails: true` (default), a denied key whose value looks like an email is **kept**. Set `preserveEmails: false` if a denied key must always be dropped.
+
 ### Custom Patterns
 
 The default patterns strip `$` (MongoDB operator prefix) and control characters. You can override these with your own:
