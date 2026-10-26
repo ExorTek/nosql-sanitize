@@ -15,7 +15,8 @@ const sanitizeString = (str, options, isValue = false) => {
   const original = str;
 
   _combinedPattern.lastIndex = 0;
-  let result = str.replace(_combinedPattern, replaceWith);
+  // Function replacer: `replaceWith` is inserted literally, never expanded as $& / $1
+  let result = str.replace(_combinedPattern, () => replaceWith);
 
   if (stringOptions.trim) result = result.trim();
   if (stringOptions.lowercase) result = result.toLowerCase();
