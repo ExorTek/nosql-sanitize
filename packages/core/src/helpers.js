@@ -29,6 +29,9 @@ const isObjectEmpty = (obj) => {
   return true;
 };
 
+// '' / null / undefined / {} / []: what removeEmpty: 'empty' drops (0 and false are kept)
+const isEmptyValue = (val) => val === '' || val == null || (isArray(val) ? val.length === 0 : isObjectEmpty(val));
+
 const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i;
 const isEmail = (val) => isString(val) && val.length > 5 && val.indexOf('@') > 0 && EMAIL_RE.test(val);
 
@@ -109,7 +112,7 @@ const validators = Object.freeze({
   customSanitizer: (v) => v === null || isFunction(v),
   onSanitize: (v) => v === null || isFunction(v),
   recursive: isBoolean,
-  removeEmpty: isBoolean,
+  removeEmpty: (v) => isBoolean(v) || v === 'falsy' || v === 'empty',
   // maxDepth:0 is now valid ("only top-level string sanitization").
   maxDepth: (v) => v === null || (isNumber(v) && v >= 0),
   dotKeys: (v) => ['allow', 'replace', 'remove'].includes(v),
@@ -173,6 +176,7 @@ module.exports = {
   isDate,
   isFunction,
   isObjectEmpty,
+  isEmptyValue,
   isEmail,
   cleanUrl,
   extractMimeType,
