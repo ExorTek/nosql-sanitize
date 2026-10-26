@@ -2,7 +2,7 @@
 
 const { isString, isArray, isPlainObject, isPrimitive, isDate, isEmail, log } = require('./helpers');
 const { NoSQLSanitizeError } = require('./errors');
-const { DANGEROUS_KEYS } = require('./constants');
+const { DANGEROUS_KEYS, HARD_MAX_DEPTH } = require('./constants');
 
 const REMOVE = Symbol('nosql-sanitize:remove');
 // Internal sentinel for a reference back to an object currently being sanitized.
@@ -21,7 +21,8 @@ const sanitizeString = (str, options, isValue = false) => {
   const original = str;
 
   _combinedPattern.lastIndex = 0;
-  let result = str.replace(_combinedPattern, replaceWith);
+  // Function replacer: `replaceWith` is inserted literally, never expanded as $& / $1
+  let result = str.replace(_combinedPattern, () => replaceWith);
 
   if (stringOptions.trim) result = result.trim();
   if (stringOptions.lowercase) result = result.toLowerCase();
@@ -264,7 +265,17 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       }
     }
 
-    acc[sanitizedKey] = sanitizedValue;
+    if (DANGEROUS_KEYS.has(sanitizedKey)) {
+      // Only reachable with allowPrototypeKeys: plain assignment to __proto__ would swap acc's prototype
+      Object.defineProperty(acc, sanitizedKey, {
+        value: sanitizedValue,
+        enumerable: true,
+        writable: true,
+        configurable: true,
+      });
+    } else {
+      acc[sanitizedKey] = sanitizedValue;
+    }
   }
 
   return acc;
@@ -287,6 +298,13 @@ const sanitizeValue = (value, options, isValue = false, depth = 0, path = '') =>
       default:
         return REMOVE;
     }
+  }
+
+  if (options.maxDepth === null && depth >= HARD_MAX_DEPTH) {
+    throw new NoSQLSanitizeError(
+      `Max sanitization depth (${HARD_MAX_DEPTH}) exceeded at "${path || '<root>'}"; set maxDepth to control this`,
+      'max_depth',
+    );
   }
 
   const array = isArray(value);

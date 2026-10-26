@@ -98,7 +98,7 @@ fastify.register(mongoSanitize, {
   mode: 'auto',             // 'auto' | 'manual'
   skipRoutes: [],            // Routes to skip (string or RegExp)
   recursive: true,           // Sanitize nested objects
-  maxDepth: null,            // Max recursion depth (0 = top-level only, null = unlimited)
+  maxDepth: null,            // Max recursion depth (0 = top-level only, null = no limit, hard ceiling 256)
   maxDepthBehavior: 'preserve', // 'preserve' (default) | 'remove' (recommended) | 'throw'
   preserveEmails: true,      // Preserve email-looking values (also bypasses custom patterns)
   allowPrototypeKeys: false, // Block __proto__/constructor/prototype keys
