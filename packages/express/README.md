@@ -97,7 +97,7 @@ app.use(mongoSanitize({
   replaceWith: '',           // Replace matched chars with this string
   removeMatches: false,      // Remove entire key-value pair if pattern matches
   sanitizeObjects: ['body', 'query'],  // Request fields to sanitize
-  contentTypes: ['application/json', 'application/x-www-form-urlencoded'],
+  contentTypes: ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'],
   mode: 'auto',             // 'auto' | 'manual'
   skipRoutes: [],            // Routes to skip (string or RegExp)
   recursive: true,           // Sanitize nested objects
@@ -147,12 +147,12 @@ app.post('/sensitive', (req, res) => {
 
 ### Content-Type Guard
 
-By default only `application/json` and `application/x-www-form-urlencoded` bodies are sanitized. `req.query` is always sanitized regardless of content type.
+By default `application/json`, `application/x-www-form-urlencoded` and `multipart/form-data` bodies are sanitized, and `+json` types (e.g. `application/vnd.api+json`) count as JSON. multer turns `user[$ne]=x` into `{ user: { $ne: 'x' } }`, so multipart needs the same protection. Only the parsed fields object `req.body` is touched, never `req.file(s)`. `req.query` is always sanitized regardless of content type.
 
-> **Warning**: other body types pass through **unsanitized**. That includes `multipart/form-data` (multer turns `user[$ne]=x` into `{ user: { $ne: 'x' } }`) and `+json` types like `application/vnd.api+json`. Add every body type you parse to `contentTypes`. Only the parsed fields object is touched, never `req.file(s)`.
+> Other body types pass through **unsanitized**. Add every body type you parse to `contentTypes`.
 
 ```js
-app.use(mongoSanitize({ contentTypes: ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'] }));
+app.use(mongoSanitize({ contentTypes: ['application/json', 'application/graphql'] })); // replaces the default list
 app.use(mongoSanitize({ contentTypes: null })); // sanitize every content type (use with care)
 ```
 

@@ -94,7 +94,7 @@ fastify.register(mongoSanitize, {
   replaceWith: '',           // Replace matched chars with this string
   removeMatches: false,      // Remove entire key-value pair if pattern matches
   sanitizeObjects: ['body', 'params', 'query'],  // Fields to sanitize
-  contentTypes: ['application/json', 'application/x-www-form-urlencoded'],
+  contentTypes: ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'],
   mode: 'auto',             // 'auto' | 'manual'
   skipRoutes: [],            // Routes to skip (string or RegExp)
   recursive: true,           // Sanitize nested objects
@@ -129,12 +129,14 @@ fastify.post('/sensitive', async (request) => {
 
 ### Content-Type Guard
 
-By default only `application/json` and `application/x-www-form-urlencoded` bodies are sanitized. `request.query` is always sanitized regardless of content type.
+By default `application/json`, `application/x-www-form-urlencoded` and `multipart/form-data` bodies are sanitized, and `+json` types (e.g. `application/vnd.api+json`) count as JSON. `request.query` is always sanitized regardless of content type.
 
-> **Warning**: other body types pass through **unsanitized**. That includes `multipart/form-data` (e.g. `@fastify/multipart` with `attachFieldsToBody`) and `+json` types like `application/vnd.api+json`. Add every body type you parse to `contentTypes`.
+With `@fastify/multipart` and `attachFieldsToBody: true`, each field object has a `fields` property that points back at the body. The sanitizer cuts that circular reference (reported via `onSanitize` with reason `'circular'`) and sanitizes `value`, `fieldname` and the key. File parts keep their `toBuffer()` / `file` stream. To bypass that handling, use `attachFieldsToBody: 'keyValues'`, which gives you flat values.
+
+> Other body types pass through **unsanitized**. Add every body type you parse to `contentTypes`.
 
 ```js
-fastify.register(mongoSanitize, { contentTypes: ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'] });
+fastify.register(mongoSanitize, { contentTypes: ['application/json', 'application/graphql'] }); // replaces the default list
 fastify.register(mongoSanitize, { contentTypes: null }); // sanitize every content type (use with care)
 ```
 
