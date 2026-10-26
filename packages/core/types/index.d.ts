@@ -23,6 +23,20 @@ declare namespace noSQLSanitizeCore {
     distinct?: boolean;
   }
 
+  type LogMethod = (obj: Record<string, any>, msg: string) => void;
+
+  /**
+   * Any logger with these methods, e.g. pino, `fastify.log` or `console`.
+   * Called pino-style: `logger.info({ module, context, data? }, message)`.
+   */
+  export interface Logger {
+    error: LogMethod;
+    warn: LogMethod;
+    info: LogMethod;
+    debug: LogMethod;
+    trace: LogMethod;
+  }
+
   export interface DebugOptions {
     /** Enable debug logging. @default false */
     enabled?: boolean;
@@ -34,6 +48,11 @@ declare namespace noSQLSanitizeCore {
     logSanitizedValues?: boolean;
     /** Log when routes are skipped. @default false */
     logSkippedRoutes?: boolean;
+    /**
+     * Where log messages go. `level` still filters first, then the logger's own level applies.
+     * `null` writes formatted lines with `console.log`. @default null
+     */
+    logger?: Logger | null;
   }
 
   /** What `handleRequest` does when a request contains an injection. */
@@ -346,6 +365,8 @@ declare namespace noSQLSanitizeCore {
   /** `''`, `null`, `undefined`, `{}` or `[]` (what `removeEmpty: 'empty'` removes). */
   export function isEmptyValue(val: any): boolean;
   export function isEmail(value: any): boolean;
+  /** Has `error`, `warn`, `info`, `debug` and `trace` methods. */
+  export function isLogger(value: any): value is Logger;
 
   /**
    * Normalize a URL path: strip query string, trailing slashes.

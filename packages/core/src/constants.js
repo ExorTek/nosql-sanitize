@@ -99,6 +99,8 @@ const DEFAULT_OPTIONS = deepFreeze({
     logPatternMatches: false,
     logSanitizedValues: false,
     logSkippedRoutes: false,
+    // Object with error/warn/info/debug/trace methods (pino, fastify.log, console…); null → console.log
+    logger: null,
   },
 });
 

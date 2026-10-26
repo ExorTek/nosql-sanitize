@@ -19,6 +19,10 @@ const viaDefault: ResolvedOptions = core.resolveOptions();
 const err = new NoSQLSanitizeError('x', 'injection_detected', 400);
 const status: number | undefined = err.statusCode;
 
+resolveOptions({ debug: { enabled: true, logger: console } });
+// @ts-expect-error a logger needs error/warn/info/debug/trace
+resolveOptions({ debug: { logger: { info: () => {} } } });
+
 // @ts-expect-error unknown dotKeys mode
 resolveOptions({ dotKeys: 'strip' });
 // @ts-expect-error unknown onInjection mode
