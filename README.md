@@ -51,7 +51,7 @@ Every framework major below is exercised by the integration test suite (`yarn te
 | -------------- | --------------- | ---------------------------------- |
 | **Express**    | `4.x` and `5.x` | ✅ Express 4 + Express 5 servers    |
 | **Fastify**    | `4.x` and `5.x` | ✅ Fastify 4 + Fastify 5 servers    |
-| **Node.js**    | `>= 18`         | ✅                                  |
+| **Node.js**    | `>= 20`         | ✅                                  |
 | **Modules**    | CommonJS + ESM  | `require()` and `import` both work |
 | **TypeScript** | Bundled `.d.ts` | No `@types/*` needed               |
 

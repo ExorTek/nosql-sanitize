@@ -86,7 +86,7 @@ app.use(mongoSanitize());
 | Runtime      | Supported                | Notes                                                   |
 | ------------ | ------------------------ | ------------------------------------------------------- |
 | **Express**  | `4.x` and `5.x`          | Both majors covered by the integration test suite.      |
-| **Node.js**  | `>= 18`                  | Uses only stable core APIs.                              |
+| **Node.js**  | `>= 20`                  | Uses only stable core APIs.                              |
 | **Modules**  | CommonJS + ESM           | `require()` and `import` both work.                     |
 | **Types**    | Bundled `.d.ts`          | No `@types/*` package needed.                            |
 
