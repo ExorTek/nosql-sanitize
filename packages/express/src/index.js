@@ -23,6 +23,19 @@ const expressMongoSanitize = (options = {}) => {
   });
   log(opts.debug, 'info', 'PLUGIN', 'Plugin initialized');
 
+  // req.sanitize(customOpts) runs per request, so resolve each options object only once.
+  // Options objects are treated as immutable: pass a new object to change them.
+  const customCache = new WeakMap();
+  const resolveCustom = (customOpts) => {
+    if (typeof customOpts !== 'object') return resolveOptions({ ...options, ...customOpts });
+    let resolved = customCache.get(customOpts);
+    if (!resolved) {
+      resolved = resolveOptions({ ...options, ...customOpts });
+      customCache.set(customOpts, resolved);
+    }
+    return resolved;
+  };
+
   return (req, res, next) => {
     const requestPath = req.path || req.url;
 
@@ -36,7 +49,7 @@ const expressMongoSanitize = (options = {}) => {
 
     if (opts.mode === 'manual') {
       req.sanitize = (customOpts) => {
-        const finalOpts = customOpts ? resolveOptions({ ...options, ...customOpts }) : opts;
+        const finalOpts = customOpts ? resolveCustom(customOpts) : opts;
         handleRequest(req, finalOpts);
       };
     }
