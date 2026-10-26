@@ -10,6 +10,9 @@ const {
   NoSQLSanitizeError,
 } = require('@exortek/nosql-sanitize-core');
 
+// 'preValidation' sanitizes before schema validation, so the schema checks the sanitized data
+const HOOKS = Object.freeze(['preHandler', 'preValidation']);
+
 const setup = (fastify, options) => {
   // Fastify parses params before hooks run, so they're sanitized by default here
   const baseOptions = {
@@ -43,6 +46,9 @@ const setup = (fastify, options) => {
     });
   }
 
+  const hook = options.hook === undefined ? 'preHandler' : options.hook;
+  if (!HOOKS.includes(hook)) throw new NoSQLSanitizeError('Invalid configuration: "hook"', 'type_error');
+
   if (opts.mode === 'auto') {
     // Route-level config.mongoSanitize: false skips the route, an object overrides the plugin options
     const resolveRoute = (config) => {
@@ -73,7 +79,7 @@ const setup = (fastify, options) => {
       return resolved;
     };
 
-    fastify.addHook('preHandler', (request, reply, done) => {
+    fastify.addHook(hook, (request, reply, done) => {
       if (shouldSkipRoute(request.url, opts.skipRoutes, opts.debug)) {
         return done();
       }
