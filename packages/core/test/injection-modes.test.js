@@ -56,7 +56,7 @@ test("onInjection: 'report' reports through onSanitize without changing the requ
   assert.deepStrictEqual(req.query, { q: '$where' });
   assert.deepStrictEqual(
     events.map((e) => e.path),
-    ['body.user.$ne', 'query.q'],
+    ['body.user.ne', 'query.q'],
   );
 });
 

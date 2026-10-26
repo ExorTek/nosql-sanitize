@@ -49,6 +49,11 @@ const DEFAULT_OPTIONS = deepFreeze({
   mode: 'auto',
   skipRoutes: [],
   customSanitizer: null,
+  // What handleRequest does when a request contains an injection:
+  //   'sanitize' → strip it (default)
+  //   'reject'   → throw NoSQLSanitizeError('injection_detected') with statusCode 400
+  //   'report'   → only report changes through onSanitize; the request is left untouched
+  onInjection: 'sanitize',
   onSanitize: null,
   recursive: true,
   // true / 'falsy' → drop falsy values ('', null, undefined, 0, false)

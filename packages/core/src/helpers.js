@@ -110,6 +110,7 @@ const validators = Object.freeze({
   skipRoutes: isArray,
   contentTypes: (v) => v === null || isArray(v),
   customSanitizer: (v) => v === null || isFunction(v),
+  onInjection: (v) => ['sanitize', 'reject', 'report'].includes(v),
   onSanitize: (v) => v === null || isFunction(v),
   recursive: isBoolean,
   removeEmpty: (v) => isBoolean(v) || v === 'falsy' || v === 'empty',
