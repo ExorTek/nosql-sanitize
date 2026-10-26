@@ -14,6 +14,7 @@
   },
   "scripts": {
     "test": "node --test test/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
     "prepublishOnly": "npm test"
   },
   "repository": {

@@ -3,14 +3,18 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { SanitizeOptions, ResolvedOptions, SanitizeEvent } from '@exortek/nosql-sanitize-core';
 
-declare module 'express' {
-  interface Request {
-    /**
-     * Available when `mode: 'manual'`.
-     * Call to sanitize `req.body`, `req.query`, and/or `req.params`.
-     * Optionally pass overrides for this specific call.
-     */
-    sanitize?: (options?: expressMongoSanitize.SanitizeOptions) => void;
+// Express's request types all extend the global Express.Request; augmenting `module 'express'`
+// doesn't reach the `req` that route handlers receive.
+declare global {
+  namespace Express {
+    interface Request {
+      /**
+       * Available when `mode: 'manual'`.
+       * Call to sanitize `req.body`, `req.query`, and/or `req.params`.
+       * Optionally pass overrides for this specific call.
+       */
+      sanitize?: (options?: expressMongoSanitize.SanitizeOptions) => void;
+    }
   }
 }
 

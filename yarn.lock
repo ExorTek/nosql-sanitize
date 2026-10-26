@@ -341,16 +341,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/multipart@npm:^9":
-  version: 9.4.0
-  resolution: "@fastify/multipart@npm:9.4.0"
+"@fastify/multipart@npm:^10.1.6":
+  version: 10.1.6
+  resolution: "@fastify/multipart@npm:10.1.6"
   dependencies:
     "@fastify/busboy": "npm:^3.0.0"
     "@fastify/deepmerge": "npm:^3.0.0"
     "@fastify/error": "npm:^4.0.0"
-    fastify-plugin: "npm:^5.0.0"
+    fastify-plugin: "npm:^6.0.0"
     secure-json-parse: "npm:^4.0.0"
-  checksum: 10c0/4e82b59333dca720ef71b409249291db1955ac6fa7eb6769a83d22e08342fb48fd6e9ca28e553dc2222b58aaebc09392fcf8f680297f2fc259597a7bddd80243
+  checksum: 10c0/42544cf5239a323f07eae3f72e48f1c6b137cdda4f6fe3f4ae7aebed5df8a9140513f40961bc22270da9cd10cdca7226dde9e942e90fa39b2cf61f44f72c7276
   languageName: node
   linkType: hard
 
@@ -1121,14 +1121,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify-plugin@npm:^5.0.0":
-  version: 5.1.0
-  resolution: "fastify-plugin@npm:5.1.0"
-  checksum: 10c0/61b330b8cb03a3581b796d745137499a782934abcf65dbf9a41d07248520cfd220b3ae8b16afeaf81af712e68e1ac24352895132cfeb2b372c66662c0170f365
-  languageName: node
-  linkType: hard
-
-"fastify-plugin@npm:^6.0.1":
+"fastify-plugin@npm:^6.0.0, fastify-plugin@npm:^6.0.1":
   version: 6.0.1
   resolution: "fastify-plugin@npm:6.0.1"
   checksum: 10c0/01bae91a7b8283232ff16cf7cad24dfe2d4bea9dc0b44a7eecc3f649bfe8ca0479ddabaf2a24690d90dbc5c118bec19c884b44ba2f34be80b72c4413d6f8b1df
@@ -1610,7 +1603,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"multer@npm:^2":
+"multer@npm:^2.5.0":
   version: 2.5.0
   resolution: "multer@npm:2.5.0"
   dependencies:
@@ -1643,13 +1636,13 @@ __metadata:
   dependencies:
     "@exortek/express-mongo-sanitize": "workspace:*"
     "@exortek/fastify-mongo-sanitize": "workspace:*"
-    "@fastify/multipart": "npm:^9"
+    "@fastify/multipart": "npm:^10.1.6"
     express4: "npm:express@4.22.2"
     express5: "npm:express@5.2.1"
     fastify-multipart8: "npm:@fastify/multipart@^8"
     fastify4: "npm:fastify@4.29.1"
     fastify5: "npm:fastify@5.9.0"
-    multer: "npm:^2"
+    multer: "npm:^2.5.0"
   languageName: unknown
   linkType: soft
 
@@ -1664,6 +1657,7 @@ __metadata:
     fastify: "npm:^5.12.7"
     fastify4: "npm:fastify@4.29.1"
     prettier: "npm:^3.9.10"
+    typescript: "npm:^6.0.3"
   languageName: unknown
   linkType: soft
 
@@ -2283,6 +2277,26 @@ __metadata:
     media-typer: "npm:^1.1.0"
     mime-types: "npm:^3.0.0"
   checksum: 10c0/a6018f8f509de48f2c7429305e3a920e73b374fa93127dd0877ae1c2df65a5d33907caac8afb0c37a9b9fc7c49f29e3f55d668963dc845d966930b667c07f50e
+  languageName: node
+  linkType: hard
+
+"typescript@npm:^6.0.3":
+  version: 6.0.3
+  resolution: "typescript@npm:6.0.3"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/4a25ff5045b984370f48f196b3a0120779b1b343d40b9a68d114ea5e5fff099809b2bb777576991a63a5cd59cf7bffd96ff6fe10afcefbcb8bd6fb96ad4b6606
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@npm%3A^6.0.3#optional!builtin<compat/typescript>":
+  version: 6.0.3
+  resolution: "typescript@patch:typescript@npm%3A6.0.3#optional!builtin<compat/typescript>::version=6.0.3&hash=5786d5"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/2f25c74e65663c248fa1ade2b8459d9ce5372ff9dad07067310f132966ebec1d93f6c42f0baf77a6b6a7a91460463f708e6887013aaade22111037457c6b25df
   languageName: node
   linkType: hard
 
