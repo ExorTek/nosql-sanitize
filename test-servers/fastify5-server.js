@@ -148,6 +148,30 @@ async function build() {
     instance.post('/preserve/test', async (request) => ({ body: request.body }));
   });
 
+  app.register(async (instance) => {
+    await instance.register(require('@fastify/multipart'), { attachFieldsToBody: true });
+    await instance.register(mongoSanitize);
+    instance.post('/multipart/test', async (request) => {
+      const body = {};
+      let circular = false;
+      for (const [key, part] of Object.entries(request.body)) {
+        if (part.fields === request.body) circular = true;
+        body[key] = part.type === 'file' ? (await part.toBuffer()).toString() : part.value;
+      }
+      return { body, circular };
+    });
+  });
+
+  app.register(async (instance) => {
+    instance.addContentTypeParser(
+      /^application\/[\w.+-]+\+json$/,
+      { parseAs: 'string' },
+      instance.getDefaultJsonParser('ignore', 'ignore'),
+    );
+    await instance.register(mongoSanitize);
+    instance.post('/plusjson/test', async (request) => ({ body: request.body }));
+  });
+
   return app;
 }
 
