@@ -26,6 +26,31 @@ jobs:
       - run: corepack enable
       - run: yarn install --immutable
 
-      # format:check (prettier) → unit tests in every workspace → the
-      # express/fastify 4+5 integration servers (test-servers/run-all-tests.js).
+      # format:check (prettier) → unit tests in every workspace → type tests
+      # (tsc over packages/*/test/types) → the express/fastify 4+5 integration
+      # servers (test-servers/run-all-tests.js).
       - run: yarn verify
+
+  # Newer Node lines. Kept out of `verify` because branch protection requires
+  # that job by its exact name, which a matrix would change.
+  compat:
+    name: test · node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: corepack enable
+      - run: yarn install --immutable
+
+      - run: yarn test
+      - run: yarn test:servers
+      # Coverage report in the job log (node:test's built-in coverage)
+      - if: matrix.node == 22
+        run: yarn test:coverage
