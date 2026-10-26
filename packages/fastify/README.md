@@ -127,6 +127,8 @@ fastify.post('/sensitive', async (request) => {
 });
 ```
 
+> Per-call options are resolved once per object and cached. Define them once (e.g. `const strict = { maxDepth: 2 }`) instead of inline, so the cache is hit, and don't mutate an object after passing it in.
+
 ### Content-Type Guard
 
 By default `application/json`, `application/x-www-form-urlencoded` and `multipart/form-data` bodies are sanitized, and `+json` types (e.g. `application/vnd.api+json`) count as JSON. `request.query` is always sanitized regardless of content type.
