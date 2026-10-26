@@ -142,7 +142,7 @@ for (const version of expressVersions) {
     });
 
     assert.strictEqual(response.status, 200);
-    assert.deepStrictEqual(await response.json(), { username: 'admin', email: 'test@example.com', role: 'super' });
+    assert.deepStrictEqual(await response.json(), { username: 'admin', role: 'super' });
     server.close();
   });
 

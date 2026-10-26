@@ -173,14 +173,14 @@ test('sanitizeObject — deniedKeys filters', () => {
     { username: '$admin', email: 'test@example.com', password: '$secret', role: '$super' },
     o,
   );
-  // email value is an email → preserved even though key is denied
-  assert.deepStrictEqual(result, { username: 'admin', email: 'test@example.com', role: 'super' });
+  // denied keys go even when the value looks like an email
+  assert.deepStrictEqual(result, { username: 'admin', role: 'super' });
 });
 
-test('sanitizeObject — BUG-03 fix: deniedKey with email value preserved', () => {
+test('sanitizeObject — deniedKey with email value is removed', () => {
   const o = opts({ deniedKeys: ['contact'] });
   const result = sanitizeObject({ contact: 'user@example.com', name: '$admin' }, o);
-  assert.deepStrictEqual(result, { contact: 'user@example.com', name: 'admin' });
+  assert.deepStrictEqual(result, { name: 'admin' });
 });
 
 test('sanitizeObject — removeMatches removes keys matching patterns', () => {

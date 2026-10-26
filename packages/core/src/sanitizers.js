@@ -108,7 +108,6 @@ const sanitizeObject = (obj, options, depth, path = '') => {
     deniedKeys,
     removeMatches,
     allowPrototypeKeys,
-    preserveEmails,
     dotKeys,
     replaceWith,
     _combinedPattern,
@@ -127,11 +126,8 @@ const sanitizeObject = (obj, options, depth, path = '') => {
     const key = keys[i];
     const val = obj[key];
 
+    // Denied keys always go, even when the value looks like an email
     if (deniedKeys.size && deniedKeys.has(key)) {
-      if (preserveEmails && isEmail(val)) {
-        acc[sanitizeString(key, options)] = val;
-        continue;
-      }
       if (auditing) emitRemoved(onSanitize, 'deniedKey', key, keyPath(path, key), val);
       if (debugOn) log(debug, 'debug', 'OBJECT', `Key '${key}' denied`);
       continue;

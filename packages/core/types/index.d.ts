@@ -211,8 +211,7 @@ declare namespace noSQLSanitizeCore {
      */
     dotKeys?: DotKeysBehavior;
     /**
-     * Remove these keys (empty = deny none). Note: with `preserveEmails: true`
-     * a denied key whose value looks like an email is kept.
+     * Remove these keys at every depth (empty = deny none), whatever their value.
      * @default []
      */
     deniedKeys?: string[];

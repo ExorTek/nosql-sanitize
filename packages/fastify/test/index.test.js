@@ -154,8 +154,8 @@ for (const { name, factory } of fastifyVersions) {
     });
 
     assert.strictEqual(response.statusCode, 200);
-    // email preserved by BUG-03 fix (email value on denied key)
-    assert.deepStrictEqual(response.json(), { username: 'admin', email: 'test@example.com', role: 'super' });
+    // denied keys go even when the value looks like an email
+    assert.deepStrictEqual(response.json(), { username: 'admin', role: 'super' });
     await fastify.close();
   });
 
