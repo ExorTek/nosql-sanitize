@@ -101,9 +101,10 @@ fastify.register(mongoSanitize, { hook: 'preHandler' });
 With `debug.enabled`, the Fastify plugin now logs through `request.log` (and `fastify.log` outside a request) instead of
 `console.log`. Lines are structured (`{ module: 'nosql-sanitize', context, data }`) and carry the request id. Your Fastify
 logger's level applies on top of `debug.level`, so set it low enough (e.g. `logger: { level: 'debug' }`) to see debug
-messages.
+messages. If your Fastify instance has no logger (the `logger` option is unset or `false`), the plugin still writes to
+`console.log` as before.
 
-For the v3 console output:
+For the v3 console output with a Fastify logger enabled:
 
 ```js
 fastify.register(mongoSanitize, { debug: { enabled: true, logger: null } });

@@ -12,4 +12,4 @@ Fail-closed defaults. See the [migration guide](https://github.com/ExorTek/nosql
 - `deniedKeys` always remove the key, even when its value looks like an email (`preserveEmails` no longer overrides them).
 - `removeEmpty: true` now means `'empty'` (keeps `0` and `false`, removes `{}` and `[]`), and `arrayOptions.filterNull: true` means `'nullish'`. Use `'falsy'` for the v3 behavior.
 - Fastify: sanitizes in `preValidation` by default, so schemas validate the sanitized data (`hook: 'preHandler'` restores v3).
-- Fastify: debug output goes through `request.log` by default (`debug.logger: null` restores `console.log`).
+- Fastify: debug output goes through `request.log` by default when a Fastify logger is configured (`debug.logger: null` restores `console.log`).
