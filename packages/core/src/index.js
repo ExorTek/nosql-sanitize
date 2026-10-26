@@ -234,7 +234,7 @@ const handleRequest = (request, options) => {
     } else {
       // The built-in sanitizer always writes into a fresh object/array and never
       // mutates its input, so no top-level clone is needed here. The field name
-      // seeds the onSanitize path (e.g. "body.user.$gt").
+      // seeds the onSanitize path (e.g. "body.user.gt").
       sanitized = sanitizeValue(data, options, false, 0, field);
     }
 

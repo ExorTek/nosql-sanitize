@@ -179,7 +179,7 @@ app.use(mongoSanitize({
 | `reason`         | Only for `'removed'`: `'deniedKey'`, `'notAllowed'`, `'prototypePollution'`, `'dotKey'`, `'removeMatches'`, `'removeEmpty'`, `'maxDepth'`, `'circular'` |
 | `key`            | Original key (e.g., `'$gt'`)                                                                                                  |
 | `sanitizedKey`   | Key after sanitization (e.g., `'gt'`)                                                                                         |
-| `path`           | Full dotted path (e.g., `'body.user.$gt'`)                                                                                    |
+| `path`           | Full dotted path, built from sanitized keys (e.g., `'body.user.gt'` for `{ user: { $gt } }`)                                  |
 | `originalValue`  | Value before sanitization                                                                                                     |
 | `sanitizedValue` | Value after sanitization (`undefined` for removals)                                                                           |
 

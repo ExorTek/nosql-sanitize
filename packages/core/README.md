@@ -53,7 +53,7 @@ sanitizeValue(['$a', '$b'], opts);             // → ['a', 'b']
 | `options` | `Object`  | —       | Resolved options from `resolveOptions()`.                                                   |
 | `isValue` | `boolean` | `false` | When `true`, `stringOptions` are applied (keys are never trimmed, lowercased or truncated). |
 | `depth`   | `number`  | `0`     | Current recursion depth. Used internally.                                                   |
-| `path`    | `string`  | `''`    | Dotted path for `onSanitize` events (e.g., `'body.user.$gt'`).                              |
+| `path`    | `string`  | `''`    | Dotted path for `onSanitize` events, built from sanitized keys (e.g., `'body.user.gt'`).    |
 
 ### `resolveOptions(options?)`
 
