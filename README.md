@@ -119,9 +119,9 @@ All packages (`express`, `fastify`) accept the same configuration options, which
 | `maxDepthBehavior`   | `string`               | `'preserve'`                                                | Action when `maxDepth` exceeded. See [Depth Limiting](#depth-limiting).       |
 | `preserveEmails`     | `boolean`              | `true`                                                      | Preserve email-looking values. See [Email Preservation](#email-preservation). |
 | `allowPrototypeKeys` | `boolean`              | `false`                                                     | Allow `__proto__` / `constructor` / `prototype` keys.                         |
-| `allowedKeys`        | `string[]`             | `[]`                                                        | Keys to allow without sanitization (e.g., `['$set']`).                        |
+| `allowedKeys`        | `string[]`             | `[]`                                                        | Key whitelist, applied at every depth. See [Allowing / Denying Specific Keys](#allowing--denying-specific-keys). |
 | `deniedKeys`         | `string[]`             | `[]`                                                        | Keys to completely remove from the input.                                     |
-| `removeEmpty`        | `boolean`              | `false`                                                     | Remove keys with empty/falsy values after sanitization.                       |
+| `removeEmpty`        | `boolean`              | `false`                                                     | Remove keys whose value is **falsy** after sanitization (`''`, `null`, `0`, `false`). |
 | `patterns`           | `RegExp[]`             | `[/\$/g, /[\x00-\x1F\x7F-\x9F]/g]`                          | Regex patterns to match. Override to add custom patterns.                     |
 | `customSanitizer`    | `function \| null`     | `null`                                                      | Replace the built-in sanitizer with your own function.                        |
 | `mode`               | `'auto' \| 'manual'`   | `'auto'`                                                    | `'auto'` sanitizes on every request. `'manual'` exposes `req.sanitize()`.     |
@@ -231,6 +231,8 @@ Setting `maxDepth: 0` is valid and means "only sanitize top-level string values"
 By default, values that look like email addresses (e.g., `user@example.com`) are passed through without sanitization. This prevents the `@` or other characters from being accidentally stripped.
 
 > **Important**: When `preserveEmails: true`, the email bypass also skips any custom `patterns` you provide. If you add custom patterns that must apply to email values, set `preserveEmails: false`.
+>
+> It also takes precedence over `deniedKeys`: a denied key whose value looks like an email is kept. Set `preserveEmails: false` if denied keys must always be removed.
 
 ```js
 // Custom patterns that must also apply to emails
@@ -348,10 +350,12 @@ app.use(mongoSanitize({
 
 ### Allowing / Denying Specific Keys
 
+`allowedKeys` is a **whitelist**. When it's non-empty, any key not listed is removed **at every depth** of the payload. Listed keys are still sanitized like any other key, so `$` is stripped from them. It does **not** let MongoDB operators through.
+
 ```js
-// Allow specific MongoDB operators (e.g., for admin APIs)
+// Only these keys survive, at any nesting level
 app.use(mongoSanitize({
-  allowedKeys: ['$set', '$push', '$pull']
+  allowedKeys: ['name', 'email', 'address', 'city']
 }));
 
 // Deny specific keys (removed from input entirely)

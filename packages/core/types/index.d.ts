@@ -13,7 +13,10 @@ declare namespace noSQLSanitizeCore {
   }
 
   export interface ArrayOptions {
-    /** Remove falsy values from arrays. @default false */
+    /**
+     * Remove **falsy** values from arrays (`null`, `undefined`, `0`, `''`, `false`),
+     * not only `null`. @default false
+     */
     filterNull?: boolean;
     /** Remove duplicate values from arrays. @default false */
     distinct?: boolean;
@@ -102,7 +105,11 @@ declare namespace noSQLSanitizeCore {
     onSanitize?: ((event: SanitizeEvent) => void) | null;
     /** Recursively sanitize nested objects/arrays. @default true */
     recursive?: boolean;
-    /** Remove falsy values after sanitization. @default false */
+    /**
+     * Remove keys whose value is **falsy** after sanitization (`''`, `null`,
+     * `undefined`, `0`, `false`), and keys that sanitize to an empty string.
+     * @default false
+     */
     removeEmpty?: boolean;
     /**
      * Maximum recursion depth for nested objects.
@@ -132,9 +139,18 @@ declare namespace noSQLSanitizeCore {
     allowPrototypeKeys?: boolean;
     /** Regex patterns to match and replace. @default [/\$/g, /control chars/g] */
     patterns?: RegExp[];
-    /** Only allow these keys (empty = allow all). @default [] */
+    /**
+     * Key whitelist (empty = allow all). Applied at **every depth**: any key not
+     * listed is removed. Listed keys are still sanitized (`$` is stripped), so
+     * this does not permit MongoDB operators.
+     * @default []
+     */
     allowedKeys?: string[];
-    /** Remove these keys (empty = deny none). @default [] */
+    /**
+     * Remove these keys (empty = deny none). Note: with `preserveEmails: true`
+     * a denied key whose value looks like an email is kept.
+     * @default []
+     */
     deniedKeys?: string[];
     /** String transform options. */
     stringOptions?: StringOptions;
