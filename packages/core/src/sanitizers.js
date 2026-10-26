@@ -259,7 +259,17 @@ const sanitizeObject = (obj, options, depth, path = '') => {
       }
     }
 
-    acc[sanitizedKey] = sanitizedValue;
+    if (DANGEROUS_KEYS.has(sanitizedKey)) {
+      // Only reachable with allowPrototypeKeys: plain assignment to __proto__ would swap acc's prototype
+      Object.defineProperty(acc, sanitizedKey, {
+        value: sanitizedValue,
+        enumerable: true,
+        writable: true,
+        configurable: true,
+      });
+    } else {
+      acc[sanitizedKey] = sanitizedValue;
+    }
   }
 
   return acc;
