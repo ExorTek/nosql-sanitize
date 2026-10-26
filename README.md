@@ -137,8 +137,8 @@ Fine-grained control over how string values are sanitized:
 ```js
 app.use(mongoSanitize({
   stringOptions: {
-    trim: true,          // Trim whitespace from sanitized strings
-    lowercase: true,     // Convert sanitized strings to lowercase
+    trim: true,          // Trim whitespace from string values (keys are left alone)
+    lowercase: true,     // Convert string values to lowercase (keys are left alone)
     maxLength: 500,      // Truncate values longer than 500 characters (keys are not truncated)
   }
 }));

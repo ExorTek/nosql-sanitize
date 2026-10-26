@@ -4,11 +4,11 @@ type NoSQLSanitizeCore = typeof noSQLSanitizeCore;
 
 declare namespace noSQLSanitizeCore {
   export interface StringOptions {
-    /** Trim leading/trailing whitespace. @default false */
+    /** Trim leading/trailing whitespace from values (keys are left alone). @default false */
     trim?: boolean;
-    /** Convert to lowercase. @default false */
+    /** Convert values to lowercase (keys are left alone). @default false */
     lowercase?: boolean;
-    /** Truncate strings exceeding this length. @default null */
+    /** Truncate values longer than this (a positive integer). @default null */
     maxLength?: number | null;
   }
 
@@ -27,9 +27,9 @@ declare namespace noSQLSanitizeCore {
     enabled?: boolean;
     /** Log level threshold. @default 'info' */
     level?: 'silent' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
-    /** Log regex pattern matches. @default false */
+    /** Log when a pattern changes a string, without the value itself. @default false */
     logPatternMatches?: boolean;
-    /** Log sanitized values (before/after). @default false */
+    /** Log original and sanitized values. They may contain tokens or PII. @default false */
     logSanitizedValues?: boolean;
     /** Log when routes are skipped. @default false */
     logSkippedRoutes?: boolean;

@@ -62,6 +62,15 @@ const extractMimeType = (contentType) => {
   return mime || null;
 };
 
+// Logging must never throw: circular structures and BigInts break JSON.stringify
+const safeStringify = (data) => {
+  try {
+    return JSON.stringify(data, null, 2);
+  } catch {
+    return '[unserializable]';
+  }
+};
+
 const log = (debugOpts, level, context, message, data = null) => {
   if (!debugOpts?.enabled || LOG_LEVELS[debugOpts.level || 'silent'] < LOG_LEVELS[level]) return;
 
@@ -72,7 +81,7 @@ const log = (debugOpts, level, context, message, data = null) => {
 
   if (data !== null && typeof data === 'object') {
     console.log(logMessage);
-    console.log(`${color}Data:${reset}`, JSON.stringify(data, null, 2));
+    console.log(`${color}Data:${reset}`, safeStringify(data));
   } else if (data !== null) {
     console.log(logMessage, data);
   } else {
@@ -117,10 +126,39 @@ const validators = Object.freeze({
   debug: isPlainObject,
 });
 
+// Fields of the nested option objects. Unknown fields are ignored, as at the top level.
+const nestedValidators = Object.freeze({
+  stringOptions: {
+    trim: isBoolean,
+    lowercase: isBoolean,
+    maxLength: (v) => v === null || (Number.isInteger(v) && v > 0),
+  },
+  arrayOptions: {
+    filterNull: isBoolean,
+    distinct: isBoolean,
+  },
+  debug: {
+    enabled: isBoolean,
+    level: (v) => Object.hasOwn(LOG_LEVELS, v),
+    logPatternMatches: isBoolean,
+    logSanitizedValues: isBoolean,
+    logSkippedRoutes: isBoolean,
+  },
+});
+
 const validateOptions = (options) => {
   for (const [key, validate] of Object.entries(validators)) {
     if (options[key] !== undefined && !validate(options[key])) {
       throw new NoSQLSanitizeError(`Invalid configuration: "${key}"`, 'type_error');
+    }
+  }
+  for (const [key, fields] of Object.entries(nestedValidators)) {
+    const nested = options[key];
+    if (nested === undefined) continue;
+    for (const [field, validate] of Object.entries(fields)) {
+      if (nested[field] !== undefined && !validate(nested[field])) {
+        throw new NoSQLSanitizeError(`Invalid configuration: "${key}.${field}"`, 'type_error');
+      }
     }
   }
 };

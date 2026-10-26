@@ -403,3 +403,18 @@ for (const version of expressVersions) {
 after(() => {
   setTimeout(() => process.exit(0), 100);
 });
+
+test('paramSanitizeHandler does not log raw param values', () => {
+  const handler = paramSanitizeHandler({ debug: { enabled: true, level: 'trace' } });
+  const req = { params: { token: '$secret-token' } };
+  const lines = [];
+  const original = console.log;
+  console.log = (...args) => lines.push(args.map(String).join(' '));
+  try {
+    handler(req, {}, () => {}, '$secret-token', 'token');
+  } finally {
+    console.log = original;
+  }
+  assert.strictEqual(req.params.token, 'secret-token');
+  assert.ok(!lines.join('\n').includes('secret-token'), lines.join('\n'));
+});
