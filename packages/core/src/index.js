@@ -45,14 +45,17 @@ const resolveOptions = (rawOptions = {}) => {
   const opts = {
     ...DEFAULT_OPTIONS,
     ...userOptions,
-    // Copy so callers can't mutate the frozen defaults (or each other's options)
-    sanitizeObjects: [...(userOptions.sanitizeObjects || DEFAULT_OPTIONS.sanitizeObjects)],
+    sanitizeObjects: userOptions.sanitizeObjects || DEFAULT_OPTIONS.sanitizeObjects,
     stringOptions: { ...DEFAULT_OPTIONS.stringOptions, ...withoutUndefined(userOptions.stringOptions || {}) },
     arrayOptions: { ...DEFAULT_OPTIONS.arrayOptions, ...withoutUndefined(userOptions.arrayOptions || {}) },
     debug: { ...DEFAULT_OPTIONS.debug, ...withoutUndefined(userOptions.debug || {}) },
   };
 
   helpers.validateOptions(opts);
+
+  // Copied only after validation (spreading a string would split it into characters),
+  // so callers can't mutate the frozen defaults or each other's options
+  opts.sanitizeObjects = [...opts.sanitizeObjects];
 
   // Pre-compile combined pattern (just once) for performance optimization during runtime.
   // Flags of all patterns are merged (sticky dropped, global forced) so e.g. /where/i keeps matching WHERE.

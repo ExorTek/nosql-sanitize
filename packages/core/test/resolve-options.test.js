@@ -58,3 +58,10 @@ test('array and list options set to undefined fall back to their defaults', () =
   assert.strictEqual(r.allowedKeys.size, 0);
   assert.deepStrictEqual(sanitizeValue('$x', r), 'x');
 });
+
+test('sanitizeObjects given as a string is rejected, not split into characters', () => {
+  assert.throws(
+    () => resolveOptions({ sanitizeObjects: 'body' }),
+    (err) => err.type === 'type_error' && err.message.includes('"sanitizeObjects"'),
+  );
+});
