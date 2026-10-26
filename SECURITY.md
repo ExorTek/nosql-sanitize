@@ -80,9 +80,9 @@ reporting policy above.
   any value is written back, so a crafted body cannot mutate `Object.prototype` through the sanitizer.
 - **No `RegExp.lastIndex` leakage.** Shared pattern objects never carry state between calls — a global-flagged regex
   cannot make one request's match position bleed into the next (covered by a regression test).
-- **Bounded recursion (when configured).** Setting `maxDepth` caps traversal so a deeply-nested payload cannot exhaust
-  the stack; the depth guard is enforced identically for objects and arrays. The default is `null` (unlimited), so set
-  it in production.
+- **Bounded recursion.** `maxDepth` caps traversal, and the depth guard is enforced identically for objects and arrays.
+  With the default `maxDepth: null`, an internal 256-level ceiling throws `NoSQLSanitizeError('max_depth')`, so a
+  deeply-nested payload cannot exhaust the stack. Set `maxDepth` explicitly in production.
 - **Every failure carries a machine-readable code.** `NoSQLSanitizeError` exposes a stable `code` so callers branch on
   `code`, not on message text that can change across versions.
 - **Framework-version parity.** The Express (4 + 5) and Fastify (4 + 5) integration suites (`yarn test:servers`) assert
