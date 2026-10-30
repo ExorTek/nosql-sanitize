@@ -1,6 +1,6 @@
 'use strict';
 
-const Fastify = require('fastify5');
+const Fastify = require('fastify');
 const mongoSanitize = require('@exortek/fastify-mongo-sanitize');
 
 const PORT = process.env.PORT || 3004;
