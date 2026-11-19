@@ -33,7 +33,7 @@
     "express4": "npm:express@4.22.2",
     "fastify": "^5.12.8",
     "fastify4": "npm:fastify@4.29.1",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "typescript": "^6.0.3"
   },
   "packageManager": "yarn@4.17.0",
