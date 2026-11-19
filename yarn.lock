@@ -341,16 +341,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/multipart@npm:^10.1.7":
-  version: 10.1.7
-  resolution: "@fastify/multipart@npm:10.1.7"
+"@fastify/multipart@npm:^10.1.9":
+  version: 10.1.9
+  resolution: "@fastify/multipart@npm:10.1.9"
   dependencies:
     "@fastify/busboy": "npm:^3.0.0"
     "@fastify/deepmerge": "npm:^3.0.0"
     "@fastify/error": "npm:^4.0.0"
     fastify-plugin: "npm:^6.0.0"
     secure-json-parse: "npm:^4.0.0"
-  checksum: 10c0/e69c3575ede6483bc5a7975f75d9eb11f3a1ecb875b7b0b75ba0c92d49d1bea896aeb52253a89dff636c9232d55834abc4c7c202dad6ce8ec53088bb1c232bc4
+  checksum: 10c0/8e4ecfa3ee1d23c179d947e9fe242619812e17d68e796699af548a1e49edc2406868ccb5b22b19eb02740971398b80542a418e7353a9b4a04c00445a678486be
   languageName: node
   linkType: hard
 
@@ -1636,7 +1636,7 @@ __metadata:
   dependencies:
     "@exortek/express-mongo-sanitize": "workspace:*"
     "@exortek/fastify-mongo-sanitize": "workspace:*"
-    "@fastify/multipart": "npm:^10.1.7"
+    "@fastify/multipart": "npm:^10.1.9"
     express4: "npm:express@4.22.2"
     express5: "npm:express@5.2.1"
     fastify-multipart8: "npm:@fastify/multipart@^8"
@@ -1656,7 +1656,7 @@ __metadata:
     express4: "npm:express@4.22.2"
     fastify: "npm:^5.12.8"
     fastify4: "npm:fastify@4.29.1"
-    prettier: "npm:^3.9.10"
+    prettier: "npm:^3.10.1"
     typescript: "npm:^6.0.3"
   languageName: unknown
   linkType: soft
@@ -1802,12 +1802,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.9.10":
-  version: 3.9.10
-  resolution: "prettier@npm:3.9.10"
+"prettier@npm:^3.10.1":
+  version: 3.10.1
+  resolution: "prettier@npm:3.10.1"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/0b3531593aa6fb36ac6baf629cb058bda472c59a6938774f931fe55283a07c62e6f56e621b043a82d8a3e21fc284c08c34f9e539fc70072635f79b7bae1a1067
+  checksum: 10c0/e8c03ea575a30e15afa75a3700e94609050502980d7c906374aea4cf623eef4dce0816100126207e675cc1ed54b7dfce60f02dbee8d61ec27dc69ce5df6c3723
   languageName: node
   linkType: hard
 
